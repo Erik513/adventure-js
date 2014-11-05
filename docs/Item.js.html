@@ -1,4 +1,32 @@
-/*jslint white: true, browser: true, plusplus: true, nomen: true, vars: true */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Item.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Item.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*jslint white: true, browser: true, plusplus: true, nomen: true, vars: true */
 /*global console, createjs, $, AdventureGame */
 /* @namespace AdventureGame */
 
@@ -12,18 +40,18 @@ this.AdventureGame = this.AdventureGame || {};
 	 * @summary An Item object
 	 * @mixes createjs.Bitmap
 	 *
-	 * Any item in the game that the user can interact with<br/>
-	 * Options include:<br/>
-	 * <ul>
-	 *   <li>id: The ID to identify this item (mandatory)</li>
-	 *   <li>name: The name of this item that will be shown to users (mandatory)</li>
-	 *   <li>image: Impage path or object to display for this image</li>
-	 *   <li>lescription: Text description for this item</li>
-	 *   <li>location: An object with x and y values describing the x and y coordinates to place this item on the stage</li>
-	 *   <li>onClick: Function to call when this item is clicked</li>
-	 *   <li>onDrop: Function to call when this item is dropped</li>
-	 *   <li>stage: The stage object this image is in (it will be automatically set if placed in a room)</li>
-	 * </ul>
+	 * Any item in the game that the user can interact with&lt;br/>
+	 * Options include:&lt;br/>
+	 * &lt;ul>
+	 *   &lt;li>id: The ID to identify this item (mandatory)&lt;/li>
+	 *   &lt;li>name: The name of this item that will be shown to users (mandatory)&lt;/li>
+	 *   &lt;li>image: Impage path or object to display for this image&lt;/li>
+	 *   &lt;li>lescription: Text description for this item&lt;/li>
+	 *   &lt;li>location: An object with x and y values describing the x and y coordinates to place this item on the stage&lt;/li>
+	 *   &lt;li>onClick: Function to call when this item is clicked&lt;/li>
+	 *   &lt;li>onDrop: Function to call when this item is dropped&lt;/li>
+	 *   &lt;li>stage: The stage object this image is in (it will be automatically set if placed in a room)&lt;/li>
+	 * &lt;/ul>
 	 */
 	var Item = function(options) {
 		this.initialize(options);
@@ -179,7 +207,7 @@ this.AdventureGame = this.AdventureGame || {};
 			objIndex, 
 			response = false,
 			objects = AdventureGame.stage.getObjectsUnderPoint(evt.stageX, evt.stageY);
-		for(objIndex = 0; objIndex < objects.length; objIndex++) {
+		for(objIndex = 0; objIndex &lt; objects.length; objIndex++) {
 			if(objects[objIndex] !== this) {
 				response = response || objects[objIndex].activate(this);
 			}
@@ -203,7 +231,7 @@ this.AdventureGame = this.AdventureGame || {};
 			returnVal = false,
 			player = AdventureGame.player;
 		if(this.container) {
-			if(item !== null && item instanceof Item) {
+			if(item !== null &amp;&amp; item instanceof Item) {
 				this.container.addItem(item);
 			}
 			this.container.open();
@@ -213,10 +241,10 @@ this.AdventureGame = this.AdventureGame || {};
 		} else {
 			itemDialog = new AdventureGame.Dialog({
 				image: this.image.src,
-				text: '<h3>'+this.name+'</h3><p>'+this.description+"</p>"
+				text: '&lt;h3>'+this.name+'&lt;/h3>&lt;p>'+this.description+"&lt;/p>"
 			});
 			itemDialog.show();
-			if(this.collectable && player && this.parentContainer !== player.inventory) {
+			if(this.collectable &amp;&amp; player &amp;&amp; this.parentContainer !== player.inventory) {
 				player.inventory.addItem(this);
 			}
 			returnVal = true;
@@ -324,13 +352,13 @@ this.AdventureGame = this.AdventureGame || {};
 			scaleX = (canvas.height * (matchesPercent[1] / 100) ) / this.image.height;
 			scaleY = (canvas.width * (matchesPercent[1] / 100) ) / this.image.width;
 			console.log(scaleX+","+scaleY);
-			this.scaleX = scaleX < scaleY ? scaleX : scaleY;
+			this.scaleX = scaleX &lt; scaleY ? scaleX : scaleY;
 			this.scaleY = this.scaleX;
 		} else if (matchesPixels) {
 			console.log("Pixels");
 			scaleX = (matchesPixels[1] / this.image.width);
 			scaleY = (matchesPixels[1] / this.image.height);
-			this.scaleX = scaleX < scaleY ? scaleX : scaleY;
+			this.scaleX = scaleX &lt; scaleY ? scaleX : scaleY;
 			this.scaleY = this.scaleX;
 		} else {
 			throw "Invalid scale synatx";
@@ -410,3 +438,26 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	AdventureGame.Item = Item;
 }());
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="GameBase.html">GameBase</a></li><li><a href="Item.html">Item</a></li><li><a href="Room.html">Room</a></li></ul><h3>Namespaces</h3><ul><li><a href="AventureGame.html">AventureGame</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Wed Nov 05 2014 11:57:44 GMT+0930 (CST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
