@@ -1,0 +1,19 @@
+{
+  "name": "adventure-js",
+  "version": "1.0.0",
+  "description": "Library to create point-and-click style adventure games in javascript",
+  "main": "GruntFile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/melvey/adventure-js.git"
+  },
+  "author": "Matt Elvey",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/melvey/adventure-js/issues"
+  },
+  "homepage": "https://github.com/melvey/adventure-js"
+}
