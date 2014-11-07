@@ -1,5 +1,5 @@
 /*jslint white: true, browser: true, plusplus: true, nomen: true, vars: true */
-/*global console, createjs, $, AdventureGame */
+/*global console, createjs, $, db, AdventureGame */
 
 /** @namespace **/
 this.AdventureGame = this.AdventureGame || {};
@@ -67,6 +67,15 @@ this.AdventureGame = this.AdventureGame || {};
 	 * @memberof AdventureGame.Game
 	 **/
 	p.slotBoxes = [];
+
+	/**
+	 * Object containing configuration for items as key value pairs
+	 * @name itemList
+	 * @type Object[]
+	 * @memberof AdventureGame.Game
+	 **/
+	p.itemList = {};
+
 	
 	/**
 	 * Configuration options to create player character if a character object is not given
@@ -75,7 +84,6 @@ this.AdventureGame = this.AdventureGame || {};
 	 * @memberof AdventureGame.Game
 	 **/
 	p.playerData = null;
-	
 	
 	/**
 	 * Initlization function of parent GameBase class
@@ -87,6 +95,9 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	/**
 	* Setup function called by constructor
+	* ## In addition to those from AdventureGame.GameBase the following options are accepted:
+	* * player AdventureGame.Character The player character for this game
+	* * itemList AdventureGame.Item[] Array of items used in this game (used when )
 	* @function initialize
 	* @memberof AdventureGame.Game
 	* @param options Object containing configuraiton options
@@ -107,15 +118,10 @@ this.AdventureGame = this.AdventureGame || {};
 		} else {
 			this.playerData = options.player;
 		}
+		if(options.itemList) {
+			this.itemList = options.itemList;
+		}
 		console.log("Seting up game");
-		this.assets = {images:[], audio:[]};
-		this.currentRoom = null;
-		this.loaded = false;
-		// Special variables for game inventory items
-		this.inventoryBoxsize = 8;
-		this.inventoryMarginsize = 2;
-		this.slotBoxes = [];
-		// Set inventory to use the inventory boxes for the game
 	};
 
 	/**
@@ -167,8 +173,6 @@ this.AdventureGame = this.AdventureGame || {};
 		queue.on('fileload', this.assetLoaded.bind(this));
 		queue.on('complete', this.start.bind(this));
 		queue.loadManifest(manifest);
-		console.log(manifest);
-		console.log(queue);
 		console.log("Loading items");
 	};
 	
@@ -201,7 +205,6 @@ this.AdventureGame = this.AdventureGame || {};
 		}
 		for(character in array.characters) {
 			if(array.characters.hasOwnProperty(character)) {
-				console.log(array.characters[character]);
 				this.assets.images[character] = {src: array.characters[character].src};
 				manifest.push({src: array.characters[character].src, id: character});
 			}
@@ -238,12 +241,15 @@ this.AdventureGame = this.AdventureGame || {};
 			AdventureGame.Container.prototype.addItem.call(this,item);
 			game.addToInventory(item);
 		};
+
+		console.log(AdventureGame.player.inventory.items);
+		console.log(this.itemList);
 		// Load this room if not yet loaded
 		if(this.roomData) {
 			items = this.roomData.items;
 			this.roomData.items = [];
 			for(item in items) {
-				if(items.hasOwnProperty(item)) {
+				if(items.hasOwnProperty(item) && !AdventureGame.player.inventory.hasItemWithId(item)) {
 					this.roomData.items[item] = new AdventureGame.Item(items[item]);
 				}
 			}
@@ -252,14 +258,11 @@ this.AdventureGame = this.AdventureGame || {};
 			for(charID in characters) {
 				if(characters.hasOwnProperty(charID)) {
 					this.roomData.characters[charID] = new AdventureGame.Character(characters[charID]);
-					console.log(this.roomData.characters[charID]);
-					console.log(this.assets);
 				}
 			}
 			this.currentRoom = new AdventureGame.Room(this.roomData);
 			this.door = this.roomData.entrance;
 			this.roomData = null;	// Remove this as we now have an actual room
-			console.log(this.currentRoom);
 		}
 		console.log("Fully loaded!");
 		if(!player.hasEventListener('click')) {
@@ -267,6 +270,19 @@ this.AdventureGame = this.AdventureGame || {};
 		}
 		
 		this.currentRoom.load(AdventureGame.player, this.door);
+		// Load inventory items from save (If we load it before the room the thermometer gets removed from the canvas when the room is drawn. I don't think this should happen)
+		for(item in AdventureGame.saveGame.inventory) {
+			if(AdventureGame.saveGame.inventory.hasOwnProperty(item) && !AdventureGame.player.inventory.hasItemWithId(item)) {
+				console.log("Adding "+AdventureGame.saveGame.inventory[item]+" to inventory");
+				if(this.itemList[AdventureGame.saveGame.inventory[item]]) {
+					AdventureGame.player.inventory.addItem(new AdventureGame.Item(this.itemList[AdventureGame.saveGame.inventory[item]]));
+				} else {
+					console.error("ERROR: "+AdventureGame.saveGame.inventory[item]+" does not exist in item list");
+					console.log(this.itemList);
+				}
+			}
+		}		
+		
 		this.loaded = true;
 		this.showInventory();
 		this.tickerCallback = createjs.Ticker.addEventListener('tick', this.loop.bind(this));
@@ -332,7 +348,7 @@ this.AdventureGame = this.AdventureGame || {};
 			imageBoxsizePx,
 			imageOffsetX,
 			imageOffsetY;
-			
+
 		// Move all existing boxes to the left
 		for(itemIndex = 0; itemIndex < this.slotBoxes.length; itemIndex++) {
 			createjs.Tween.get(this.slotBoxes[itemIndex]).to({x:currentMarginL},100);
@@ -360,6 +376,19 @@ this.AdventureGame = this.AdventureGame || {};
 		stage.addChild(item);
 		createjs.Tween.get(this.slotBoxes[itemIndex]).to({scaleX:1, scaleY: 1},100);
 		currentMarginL = currentMarginL + boxWidthPx + boxMarginPx ;
+		// Add to player inventory in save
+		if(AdventureGame.saveGame.inventory.indexOf(item.id) < 0) {
+			AdventureGame.saveGame.inventory.push(item.id);
+			if(AdventureGame.db) {
+				AdventureGame.db.put(AdventureGame.saveGame, function(err, doc) {
+					if(err) {
+						console.error("Error saving game after adding item to inventory");
+						console.log(err);
+						console.log(doc);
+					}
+				});
+			}
+		}
 	};
 	
 	

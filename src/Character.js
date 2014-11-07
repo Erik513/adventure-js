@@ -91,6 +91,13 @@ this.AventureGame = this.AdventureGame || {};
 	p.baseWidth = null;
 	
 	/**
+	 * Flag to indicate if we are debugging the character
+	 * @property baseWidth
+	 * @type int
+	 **/
+	p.debug = false;
+	
+	/**
 	 * Constructor for parent Sprite object
 	 * @property Sprite_initialize
 	 * @type function
@@ -103,7 +110,9 @@ this.AventureGame = this.AdventureGame || {};
 	 * @return void
 	 **/
 	p.initialize = function(options) {
-		console.log(options);
+		if(this.debug) {
+			console.log(options);
+		}
 		if(!options.id) {
 			throw "No ID set for character";
 		} else if(!options.name) {
@@ -135,14 +144,18 @@ this.AventureGame = this.AdventureGame || {};
 			this.baseWidth = img.width;
 		}
 		var spritesheet = new createjs.SpriteSheet(options.spritesheet);
-		console.log(spritesheet);
+		if(this.debug) {
+			console.log(spritesheet);
+		}
 		this.Sprite_initialize(spritesheet);
 		
 		this.x = options.x ? AdventureGame.getXCoord(options.x) : 0;
 		this.y = options.y ?  AdventureGame.getYCoord(options.y) : 0;
 		if(options.scale) {
 			var scale = AdventureGame.getScaleToFit(options.scale, this);
-			console.log(scale);
+			if(this.debug) {
+				console.log(scale);
+			}
 			this.scaleX = scale;
 			this.scaleY = scale;
 		}
@@ -152,6 +165,9 @@ this.AventureGame = this.AdventureGame || {};
 		this.destinationCallback = null; // Function to call when character reaches their destination
 		if(options.moveDistance) {
 			this.moveDistance = options.moveDistance;
+		}
+		if(this.debug) {
+			console.log("Creating inventory for "+this.name);
 		}
 		this.inventory = options.inventory || new AdventureGame.Container({
 			name: this.name+'\'s Inventory',

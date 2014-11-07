@@ -12,30 +12,74 @@ this.AdventureGame = this.AdventureGame || {};
 (function() {
 	"use strict";
 
+	/**
+	* Container object. Can hold many other objects
+	* @class AdventureGame.Container
+	*/
 	var Container = function(options) {
 		this.initialize(options);
 	};
 	var p = Container.prototype;
 	
-
-
+	/**
+	 * The unique name for this container
+	 * @name name
+	 * @type string
+	 * @memberof AdventureGame.Container
+	 **/
+	p.name = null;
+	
+	/**
+	 * The number of item slots in this container
+	 * @name slots
+	 * @type int
+	 * @memberof AdventureGame.Container
+	 **/
+	p.slots = 10;
+	
+	/**
+	 * The items currently held in this container
+	 * @name items
+	 * @type AdventureGame.Item[]
+	 * @memberof AdventureGame.Container
+	 **/
+	p.items = [];
+		
+	/**
+	* Setup function called by constructor
+	* ## The following options are accepted:
+	* * name string The container name (required)
+	* * numSlows int The number of item slots in this container (Default: 10)
+	* * items AdventureGame.Item[] The items currently held in this container
+	* @function initialize
+	* @memberof AdventureGame.Container
+	* @param options Object containing configuraiton options
+	* @return void
+	*/
 	p.initialize = function(options) {
 		if(!options.name) {
 			throw "No name set for container";
 		}
-		this.slots = options.numSlots || 10;
-		this.items = options.items || [];
 		this.name = options.name;
+		if(options.numSlots) {
+			this.slots = options.numSlots;
+		}
+		if(options.items) {
+			this.items = options.items;
+		}
 		// If there are more items than slots resize the container to fit them all
 		if(this.items.length > this.slots) {
 			this.slots = options.items.length;
 		}
-		var itemIndex = 0;
-		for(itemIndex=0; itemIndex < this.items.length; itemIndex++) {
-			this.addItem(options.items[itemIndex]);
-		}
 	};
 
+	/**
+	* Add an item to the container
+	* @function addItem
+	* @memberof AdventureGame.Container
+	* @param item AdventureGame.Item The item to add to this container
+	* @return void
+	*/
 	p.addItem = function(item) {
 		var returnVal = -1, i;
 		if(!item instanceof AdventureGame.Item) {
@@ -46,13 +90,11 @@ this.AdventureGame = this.AdventureGame || {};
 			// Find the next empty slot in the inventory
 			for(i=0; i < this.items.length; i++) {
 				if(this.items[i] === null) {
-					console.log("Using inventory slot "+i);
 					item.slot = i;
 					this.items[i] = item;
 					return i;
 				}
 			}
-			console.log("Using inventory slot "+i);
 			item.slot = i;
 			item.parentContainer = this;
 			this.items[i] = item;
@@ -62,9 +104,14 @@ this.AdventureGame = this.AdventureGame || {};
 		}
 		return returnVal;
 	};
+	
 	/**
-	* Remove the given item from this array 
-	* The item will only be removed if it correctly references its slot in the array
+	* Remove the given item from this array.
+	* The item will only be removed if it correctly references its slot in the array.
+	* @function removeItem
+	* @memberof AdventureGame.Container
+	* @param item AdventureGame.Item The item to remove from this container
+	* @return void
 	*/
 	p.removeItem = function(item) {
 		var 
@@ -78,13 +125,14 @@ this.AdventureGame = this.AdventureGame || {};
 		}
 		return returnVal;
 	};
-	p.refresh = function() {
-		console.log("To be implemented");
-	};
+	
+	
 	/**
-	* Show dialog for open container
+	* Show dialog for open container.
 	* Load container from container array and create a div mirroring the items in there. 
-	*
+	* @function open
+	* @memberof AdventureGame.Container
+	* @return void
 	*/
 	p.open = function() {
 		var containerDiv, i, slotDiv, itemImg, dialog;
@@ -115,6 +163,32 @@ this.AdventureGame = this.AdventureGame || {};
 		});	
 	};
 	
+	/**
+	* Check if an item exists with the given ID in this container
+	* @function hasItemWithId
+	* @memberof AdventureGame.Container
+	* @param id string The id of the item we are trying to match
+	* @return true if this item exists in the container. Otherwise false
+	**/
+	p.hasItemWithId = function(id) {
+		var 
+			returnVal = false,
+			itemIndex;
+		for(itemIndex = 0; itemIndex < this.items.length; itemIndex++) {
+			if(this.items[itemIndex].id === id) {
+				returnVal = true;
+				break;
+			}
+		}
+		return returnVal;
+	};
+	
+	/**
+	* Create click handler for an item
+	* @function setClickHandler
+	* @memberof AdventureGame.Container
+	* @return function Click handler for this tiem
+	*/
 	p.setClickHandler = function() {
 		return function(event) {
 			event.data.item.activate();

@@ -18,6 +18,10 @@ this.AdventureGame = this.AdventureGame || {};
 (function() {
 	"use strict";
 
+	/**
+	* Dialog shown to user
+	* @class AdventureGame.Dialog
+	*/
 	var Dialog = function(options) {
 		this.initialize(options);
 	};
@@ -27,37 +31,49 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	/**
 	 * Div object for the dialog
-	 * @property div
+	 * @name div
 	 * @type HTMLObject
+	 * @memberof AdventureGame.Dialog
 	 **/
 	p.div = null;
 	
 	/**
 	 * Callback function when the dialog is closed
-	 * @property onClose
+	 * @name onClose
 	 * @type function
+	 * @memberof AdventureGame.Dialog
 	 **/
 	p.onClose = null;
 	
 	/**
 	 * Flag indicating if this is a question and if so what type of input (radio or text)
-	 * @property questionType
-	 * @type String
+	 * @name questionType
+	 * @type function
+	 * @memberof AdventureGame.Dialog
 	 **/
 	p.questionType = null;
 
 	/**
 	 * Array of acceptable answer values
-	 * @property answers
+	 * @name answers
 	 * @type String[]
+	 * @memberof AdventureGame.Dialog
 	 **/
 	p.answers = null;
 	
 	/**
 	 * Setup dialog object according to the supplied options. Generally called by the constructor
-	 * @param options Object containing configuration paramaters
-	 * @return void
-	 **/
+	* ## The following options are accepted:
+	* * div HTMLDom object to show instead of dialog
+	* * image URI Path to image to be shown in this dialog
+	* * question string Flag indicating if a form asking the player a question should be shown. Valid values are 'radio' and 'text'
+	* * answers Object[] Array of valid answers for this question. Each object should have a value and text set
+	* * domContent HTMLDom Additional DOM content to be shown in this dialog
+	* @function initialize
+	* @memberof AdventureGame.Dialog
+	* @param options Object containing configuraiton options
+	* @return void
+	*/
 	p.initialize = function(options) {
 		console.log(options);
 		var 
@@ -150,6 +166,7 @@ this.AdventureGame = this.AdventureGame || {};
 
 	/**
 	 * Display this dialog
+	 * @memberof AdventureGame.Dialog
 	 * @return void
 	 **/
 	p.show = function() {
@@ -165,6 +182,9 @@ this.AdventureGame = this.AdventureGame || {};
 		this.domElem = new createjs.DOMElement(this.div);
 		stage.addChild(this.domElem);
 	};
+	/**
+	* @memberof AdventureGame.Dialog
+	*/
 	p.close = function() {
 		AdventureGame.stage.removeChild(this.domElem);
 		document.body.removeChild(this.div);
@@ -176,6 +196,7 @@ this.AdventureGame = this.AdventureGame || {};
 	/**
 	 * If this dialog has a question evaluate if the selected answer is correct
 	 * Should be fired in the click event of the submit button in the question form
+	 * @memberof AdventureGame.Dialog
 	 * @return true if the answer is correct else false
 	 */
 	p.evaluateAnswer = function() {
@@ -210,6 +231,7 @@ this.AdventureGame = this.AdventureGame || {};
 	/**
 	 * Default callback function if the correct answer is selected.
 	 * This may be overwritten by the constructor/initialize with the correctCallback configuration option
+	 * @memberof AdventureGame.Dialog
 	 * @return void
 	 */	
 	p.correctCallback = function() {
@@ -223,6 +245,7 @@ this.AdventureGame = this.AdventureGame || {};
 	/**
 	 * Default callback function if the incorrect answer is selected.
 	 * This may be overwritten by the constructor/initialize with the incorrectCallback configuration option
+	 * @memberof AdventureGame.Dialog
 	 * @return void
 	 */
 	p.incorrectCallback = function() {

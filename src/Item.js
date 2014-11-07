@@ -7,22 +7,21 @@ this.AdventureGame = this.AdventureGame || {};
 	"use strict";
 
 	/**
-	 * @class AdventureGame.Item
-	 * @summary An Item object
-	 * @augments createjs.Bitmap
-	 *
 	 * Any item in the game that the user can interact with<br/>
 	 * Options include:<br/>
 	 * <ul>
 	 *   <li>id: The ID to identify this item (mandatory)</li>
 	 *   <li>name: The name of this item that will be shown to users (mandatory)</li>
 	 *   <li>image: Impage path or object to display for this image</li>
-	 *   <li>lescription: Text description for this item</li>
+	 *   <li>description: Text description for this item</li>
 	 *   <li>location: An object with x and y values describing the x and y coordinates to place this item on the stage</li>
 	 *   <li>onClick: Function to call when this item is clicked</li>
 	 *   <li>onDrop: Function to call when this item is dropped</li>
 	 *   <li>stage: The stage object this image is in (it will be automatically set if placed in a room)</li>
 	 * </ul>
+	 * @class AdventureGame.Item
+	 * @summary An Item object
+	 * @augments createjs.Bitmap
 	 */
 	var Item = function(options) {
 		this.initialize(options);

@@ -1,34 +1,61 @@
 /*jslint white: true, browser: true, plusplus: true, nomen: true, vars: true */
 /*global console, createjs, $, AdventureGame */
 
-/**
-* @namespace
-*/
-this.AventureGame = this.AdventureGame || {};
+this.AdventureGame = this.AdventureGame || {};
 
 
 (function() {
 	"use strict";
 
 	/**
-	* @constructor
-	* @name GameBase
-	* @summary Base functions to load a game.
 	* Provides functions to load and store a game and defines base functions for initial setup, gameloop and exit
-	*/
+	* @class AdventureGame.GameBase
+	* @summary Base functions to load a game.
+	**/
 	var GameBase = function(options) {
 		this.initialize(options);
 	};
 	var p = GameBase.prototype;
 	
+	/**
+	* The save document for this game
+	*/
+	AdventureGame.saveGame = {};
+	
+	/**
+	* PouchDB database connction
+	*/
+	AdventureGame.db = null;
 
-
+	/**
+	* Setup function called by constructor.
+	* ### Expected options are
+	* * stage createjs.Stage The stage to draw this game on (required)
+	* * saveGame Object Save document for this game (from which data will be loaded and saved to pouchdb throughout gameplay)
+	* * saveGame PouchDB PouchDB databaes connection for saving data
+	* * assets Object passing array of AdventureGame.ImageInfo objects in options.images and options.audio
+	* * setup function Setup function for this game
+	* * loop function Gameloop functio for this game
+	* * exit function Callback function when the game exits
+	* * defaultSize Object The default size of this game in options.defaultSize.x and options.defaultSize.y
+	* * pageScale int The amount to scale all images in this game (defaults to 1)
+	* @function initialize
+	* @memberof AdventureGame.GameBase
+	* @param options Object containing configuraiton options
+	* @return void
+	*/
 	p.initialize = function(options) {
 		if(!options.stage) {
 			throw "Stage is not set";
 		}
 		this.stage = options.stage;
 		AdventureGame.stage = this.stage;
+		if(options.saveGame) {
+			AdventureGame.saveGame = options.saveGame;
+		}
+		if(options.db) {
+			AdventureGame.db = options.db;
+		}
 		this.assets = options.assets || {images:[], audio:[]};
 		if(options.setup) {
 			this.setup = options.setup;
@@ -47,23 +74,51 @@ this.AventureGame = this.AdventureGame || {};
 		if(this.defaultSize && this.defaultSize.y && this.pageScale > this.stage.canvas.height / this.defaultSize.y) {
 			this.pageScale = this.stage.canvas.height / this.defaultSize.y;
 		}
-		console.log(this.defaultSize);
-		console.log("Page Scale: "+this.pageScale);
 	};
 	
+	/**
+	* Default initial setup for the game. 
+	* Sets ticket to run gameloop. This may be overridden by passing the setup option to the constructor
+	* @function setup
+	* @memberof AdventureGame.GameBase
+	**/
 	p.setup = function() {
 		this.tickerCallback = createjs.Ticker.addEventListener('tick', this.loop.bind(this));
 		return true;
 	};
+
+	/**
+	* Default game loop
+	* Updates the screen and returns true to indicate success
+	* @function loop
+	* @memberof AdventureGame.GameBase
+	* @return true
+	**/
 	p.loop = function() {
 		this.stage.update();
 		return true;
 	};
+
+	/**
+	* Default exit function
+	* Disables ticker (which calls loop by default unless setup() has been replaced)
+	* @function exit
+	* @memberof AdventureGame.GameBase
+	* @return true
+	**/
 	p.exit = function() {
 		createjs.Ticker.removeEventListener('tick', this.tickerCallback);
 		this.stage.removeAllChildren();
 		return true;
 	};
+
+	/**
+	* Build a manifest file from supplied assets.
+	* @function assetsToManifest
+	* @memberof AdventureGame.GameBase
+	* @param assets Object containing two arrays of asset information. assets.images and assets.audio
+	* @return manifest file
+	**/
 	p.assetsToManifest = function(assets) {
 		console.log(assets);
 		var manifest = [], key;
@@ -79,6 +134,13 @@ this.AventureGame = this.AdventureGame || {};
 		}
 		return manifest;
 	};
+
+	/**
+	* Callback function when an asset is loaded
+	* @function assetLoaded
+	* @memberof AdventureGame.GameBase
+	* @param event Event information containing the loaded asset
+	**/
 	p.assetLoaded = function(event) {
 		console.log("Loaded asset "+event.item.id);
 		var item = event.item,
@@ -106,7 +168,6 @@ this.AventureGame = this.AdventureGame || {};
 				} else {
 					img = new Image();
 					img.src = item.src;
-					console.log(this.assets.images[event.item.id]);
 					this.assets.images[event.item.id].loaded = true;
 					this.assets.images[event.item.id].obj = new createjs.Bitmap(img);
 					this.assets.images[event.item.id].obj.scaleX = this.assets.images[event.item.id].scale;
@@ -120,10 +181,6 @@ this.AventureGame = this.AdventureGame || {};
 		}
 	};
 	
-	/**
-	* Base functions to load a game.
-	* Provides functions to load and store a game and defines base functions for initial setup, gameloop and exit
-	*/
 	AdventureGame.GameBase = GameBase;
 	
 }());
