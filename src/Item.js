@@ -1,6 +1,5 @@
 /*jslint white: true, browser: true, plusplus: true, nomen: true, vars: true */
 /*global console, createjs, $, AdventureGame */
-/* @namespace AdventureGame */
 
 this.AdventureGame = this.AdventureGame || {};
 
@@ -8,9 +7,9 @@ this.AdventureGame = this.AdventureGame || {};
 	"use strict";
 
 	/**
-	 * @class Item
+	 * @class AdventureGame.Item
 	 * @summary An Item object
-	 * @mixes createjs.Bitmap
+	 * @augments createjs.Bitmap
 	 *
 	 * Any item in the game that the user can interact with<br/>
 	 * Options include:<br/>
@@ -37,7 +36,7 @@ this.AdventureGame = this.AdventureGame || {};
 	 * Identification string for this item
 	 * @name id
 	 * @type String
-	 * @memberof Item
+	 * @memberof AdventureGame.Item
 	 **/
 	p.id = null;
 	
@@ -45,7 +44,7 @@ this.AdventureGame = this.AdventureGame || {};
 	 * Display name of the item
 	 * @name name
 	 * @type String
-	 * @memberof Item
+	 * @memberof AdventureGame.Item
 	 **/
 	p.name = null;
 	
@@ -53,7 +52,7 @@ this.AdventureGame = this.AdventureGame || {};
 	 * Description of this item that will be shown to users
 	 * @name description
 	 * @type String
-	 * @memberof Item
+	 * @memberof AdventureGame.Item
 	 **/
 	p.description = "";
 	
@@ -61,7 +60,7 @@ this.AdventureGame = this.AdventureGame || {};
 	 * Flag indicating if this item can be collected by the player
 	 * @name collecatable
 	 * @type Boolean
-	 * @memberof Item
+	 * @memberof AdventureGame.Item
 	 **/
 	p.collecatable = false;
 	
@@ -69,7 +68,7 @@ this.AdventureGame = this.AdventureGame || {};
 	 * Container holding this item
 	 * @name parentContainer
 	 * @type Container
-	 * @memberof Item
+	 * @memberof AdventureGame.Item
 	 **/
 	p.parentContainer = null;
 	
@@ -77,7 +76,7 @@ this.AdventureGame = this.AdventureGame || {};
 	 * Container holding contents of this item (used only if this item should act as a container itself)
 	 * @name container
 	 * @type Container
-	 * @memberof Item
+	 * @memberof AdventureGame.Item
 	 **/
 	p.container = null;
 	
@@ -85,14 +84,14 @@ this.AdventureGame = this.AdventureGame || {};
 	* Flag indicating if activation of this item is enabled
 	* @name enabled
 	* @type Boolean
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	**/
 	p.enabled = true;
 	
 	/**
 	 * @name Bitmap_initialize
 	 * @type Function
-	 * @memberof Item
+	 * @memberof AdventureGame.Item
 	 **/
 	p.Bitmap_initialize = p.initialize;
 	
@@ -101,7 +100,7 @@ this.AdventureGame = this.AdventureGame || {};
 	/**
 	* Setup this open from options
 	* @function initialize
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	* @param options An object containing the settings for the item
 	*/
 	p.initialize = function(options) {
@@ -151,7 +150,7 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	/**
 	* Event handler for whent an item is clicked. Default behaviour is for the player to walk over to the item and activate it
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	* @function onClick
 	*/
 	p.onClick = function() {
@@ -169,7 +168,7 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	/**
 	* Event handler for when an item is dropped. Default behaviour is to do nothing report success (which will leave the item where it is)
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	* @function onDrop
 	* @param evt Event information
 	* @returns True if the action was successful or false if it failed and associated actions should be reverted
@@ -193,7 +192,7 @@ this.AdventureGame = this.AdventureGame || {};
 	/**
 	* Event handler for when this item is activated.
 	* Default behaviour is to open the container if one is set otherwise show a description of the item
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	* @function activate
 	* @param item The Item that has been used to activate this object. If no item was used this may be null
 	* @returns True if this activation was successful or false if it failed and associated actions should be reverted
@@ -228,7 +227,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* Add this item to the given container
 	* @function addToContainer
 	* @param container The container object to which this item should be added
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	*/
 	p.addToContainer = function(container) {
 		if(this.parentContainer) {
@@ -241,7 +240,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* Get the height (in pixels) of this item. This is a cheaper solutions to getBounds which can be quite resource intensive
 	* @function getHeight
 	* @returns The current height of this item in pixels
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	*/
 	p.getHeight = function(){
 		return this.image.height * this.scaleY;
@@ -251,7 +250,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* Get the width (in pixels) of this item. This is a cheaper solutions to getBounds which can be quite resource intensive
 	* @function getWidth
 	* @returns The current width of this item in pixels
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	*/
 	p.getWidth = function() {
 		return this.image.width * this.scaleX;
@@ -262,7 +261,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* Enables/Disables the pressmove and pressup events on this item
 	* @function setDraggable
 	* @param draggble Boolean indicating if dragging should be enabled or disabled on this item
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	*/
 	p.setDraggable = function(draggable) {
 		if(draggable) {
@@ -285,7 +284,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* Event handler to move the item location when dragged
 	* @function itemDragged
 	* @param evt Event information containing the location of the mouse in evt.target.scaleX and evt.target.scaleY
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	*/
 	p.itemDragged = function(evt) {
 		this.enabled = false;	// Disable activating this item when dragging
@@ -299,7 +298,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* @param scale The size in pixels or percent to scale this Item to. This must be a string ending with 'px' or '%' indicating how to scale the Item
 	* @throws Error if the image has not been loaded fro this image, the stage has not yet been loaded or the input string is invalid
 	* @deprecated Use AdventureGame.getScaleToFit for a more versitile solution
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	*/
 	p.scale = function(scale) {
 		if(!this.image) {
@@ -346,7 +345,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* @throws Error if the stage has not yet been loaded or the input string is invalid
 	* @deprecated Use Item.x = AdventureGame.getXCoord for a more versitile solution
 	* @param x The distaince from left in pixels or percent to positon this item at. This must be a string ending with 'px' or '%' indicating how to measure the distance
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	*/
 	p.setX = function(x) {
 		var
@@ -375,7 +374,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* @throws Error if the stage has not yet been loaded or the input string is invalid
 	* @deprecated Use Item.y = AdventureGame.getYCoord for a more versitile solution
 	* @param x The distaince from top in pixels or percent to positon this item at. This must be a string ending with 'px' or '%' indicating how to measure the distance
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	*/
 	p.setY = function(y) {
 		var
@@ -401,7 +400,7 @@ this.AdventureGame = this.AdventureGame || {};
 	/**
 	* Move this item back to the last location
 	* @function gotoLastLocation
-	* @memberof Item
+	* @memberof AdventureGame.Item
 	**/
 	p.gotoLastLocation = function() {
 		createjs.Tween.get(this).to(this.lastLocation,100);

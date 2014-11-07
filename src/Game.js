@@ -1,16 +1,19 @@
 /*jslint white: true, browser: true, plusplus: true, nomen: true, vars: true */
 /*global console, createjs, $, AdventureGame */
 
-
+/** @namespace **/
 this.AdventureGame = this.AdventureGame || {};
 
-/**
-* The main point and click game
-* Implements prototype from GameBase and loads each room object
-*/
 (function() {
 	"use strict";
+	/* @namespace AdventureGame */
 
+	/**
+	* The main point and click game.
+	* Implements prototype from GameBase and loads each room object
+	* @class AdventureGame.Game
+	* @augments AdventureGame.GameBase
+	*/
 	var Game = function(options) {
 		this.initialize(options);
 	};
@@ -19,63 +22,73 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	/**
 	 * Array of assets to load with attributes src and id
-	 * @property assets
+	 * @name assets
 	 * @type Object
+	 * @memberof AdventureGame.Game
 	 **/
 	p.assets = null;
 
 	/**
 	 * The currently loaded room
-	 * @property currentRoom
+	 * @name currentRoom
 	 * @type AdventureGame.Room
+	 * @memberof AdventureGame.Game
 	 **/
 	p.currentRoom = null;
 
 	/**
 	 * Flag indicating if the game has been loaded
-	 * @property loaded
+	 * @name loaded
 	 * @type Boolean
+	 * @memberof AdventureGame.Game
 	 **/
 	p.loaded = false;
 	
 	/**
 	 * The size in percent to draw inventory boxes
-	 * @property inventoryBoxsize
+	 * @name inventoryBoxsize
 	 * @type int
+	 * @memberof AdventureGame.Game
 	 **/
 	p.inventoryBoxsize = 8;
 
 	/**
 	 * The size in percent to draw margins between the inventory boxes
-	 * @property inventoryMarginsize
+	 * @name inventoryMarginsize
 	 * @type int
+	 * @memberof AdventureGame.Game
 	 **/
 	p.inventoryMarginsize = 2;
 
 	/**
 	 * Array of inventory box shapes that are drawn at the top of the screen
-	 * @property slotBoxes
+	 * @name slotBoxes
 	 * @type createjs.Shape[]
+	 * @memberof AdventureGame.Game
 	 **/
 	p.slotBoxes = [];
 	
 	/**
 	 * Configuration options to create player character if a character object is not given
-	 * @property playerData
+	 * @name playerData
 	 * @type Object
+	 * @memberof AdventureGame.Game
 	 **/
 	p.playerData = null;
 	
 	
 	/**
 	 * Initlization function of parent GameBase class
-	 * @property GameBase_initialize
+	 * @name GameBase_initialize
 	 * @type fucntion
+	 * @memberof AdventureGame.Game
 	 **/
 	p.GameBase_initialize = p.initialize;
 	
 	/**
 	* Setup function called by constructor
+	* @function initialize
+	* @memberof AdventureGame.Game
 	* @param options Object containing configuraiton options
 	* @return void
 	*/
@@ -107,6 +120,8 @@ this.AdventureGame = this.AdventureGame || {};
 
 	/**
 	* Load a room into the game
+	* @function loadRoom
+	* @memberof AdventureGame.Game
 	* @param room Room object to load or object describing room
 	* @param door Optional object containing x and y coordinates along with the diraction (N,S,E,W) to introduce the character from
 	* @return void
@@ -122,7 +137,9 @@ this.AdventureGame = this.AdventureGame || {};
 	};
 	
 	/**
-	* Load the room from a Room object
+	* Load the room from a Room object (intended to be called internally)
+	* @function loadRoomFromObject
+	* @memberof AdventureGame.Game
 	* @param room The room object to load
 	* @return void
 	*/
@@ -157,6 +174,8 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	/**
 	* Load assets for room and containing items from array describing room
+	* function loadRoomAsssets
+	* @memberof AdventureGame.Game
 	* @param array Object describing room configuration
 	* @return void 
 	*/
@@ -197,6 +216,8 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	/**
 	* Function to start the game after all assets have loaded. This should be triggered by the complete event of the CreateJS Queue
+	* @function start
+	* @memberof AdventureGame.Game
 	* @return void
 	**/
 	p.start = function() {
@@ -253,6 +274,8 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	/**
 	* Game loop for this game
+	* @function loop
+	* @memberof AdventureGame.Game
 	* @return void
 	*/
 	p.loop = function() {
@@ -265,6 +288,8 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	/**
 	* Draw boxes at the top of the screen containing the player's current inventory
+	* @function showInventory
+	* @memberof AdventureGame.Game
 	* @return void
 	()*/
 	p.showInventory = function() {
@@ -288,9 +313,12 @@ this.AdventureGame = this.AdventureGame || {};
 	};
 	
 	/**
-	* Draw the specified item in the inventory boxes at the top of the screen
-	* Note that this function does not actually add the item to the player's inventory and should be called from the inventory 
-	* containers addItem function (which is set in the initialize function for game
+	* Draw the specified item in the inventory boxes at the top of the screen.
+	* Note that this function does not actually add the item to the player's inventory and should be called from the inventory.
+	* containers addItem function (which is set in the initialize function for game.
+	* @function addToInventory
+	* @memberof AdventureGame.Game
+	* @param item AdventureGame.Item The item to add the the player inventory
 	*/
 	p.addToInventory = function(item) {
 		var stage = this.stage,
@@ -304,33 +332,34 @@ this.AdventureGame = this.AdventureGame || {};
 			imageBoxsizePx,
 			imageOffsetX,
 			imageOffsetY;
-			// Move all existing boxes to the left
-			for(itemIndex = 0; itemIndex < this.slotBoxes.length; itemIndex++) {
-				createjs.Tween.get(this.slotBoxes[itemIndex]).to({x:currentMarginL},100);
-				imageOffsetX = (boxWidthPx - item.getWidth()) / 2;
-				createjs.Tween.get(AdventureGame.player.inventory.items[itemIndex]).to({x:currentMarginL + imageOffsetX},100);
-				currentMarginL = currentMarginL + boxWidthPx + boxMarginPx ;
-			}
-			// Add new box
-			this.slotBoxes[itemIndex] = new createjs.Shape();
-			this.slotBoxes[itemIndex].graphics.beginFill("rgba(255, 255, 255, 0.21)").beginStroke("black").setStrokeStyle(1).drawRoundRect(0,0,boxWidthPx,boxWidthPx,10);
-			this.slotBoxes[itemIndex].x = currentMarginL;
-			this.slotBoxes[itemIndex].y = 10;
-			this.slotBoxes[itemIndex].scaleX = 0;
-			this.slotBoxes[itemIndex].scaleY = 0;
-			stage.addChild(this.slotBoxes[itemIndex]);
-			// Scale and move image to sit inside this box
-			imageBoxsizePx = boxWidthPx * 0.8;	// Image is 80% of box size
-			item.scale(imageBoxsizePx+"px");
 			
+		// Move all existing boxes to the left
+		for(itemIndex = 0; itemIndex < this.slotBoxes.length; itemIndex++) {
+			createjs.Tween.get(this.slotBoxes[itemIndex]).to({x:currentMarginL},100);
 			imageOffsetX = (boxWidthPx - item.getWidth()) / 2;
-			imageOffsetY = (boxWidthPx - item.getHeight()) / 2;
-			item.x = currentMarginL + imageOffsetX;
-			item.y = this.slotBoxes[itemIndex].y + imageOffsetY;
-			item.setDraggable(true);
-			stage.addChild(item);
-			createjs.Tween.get(this.slotBoxes[itemIndex]).to({scaleX:1, scaleY: 1},100);
+			createjs.Tween.get(AdventureGame.player.inventory.items[itemIndex]).to({x:currentMarginL + imageOffsetX},100);
 			currentMarginL = currentMarginL + boxWidthPx + boxMarginPx ;
+		}
+		// Add new box
+		this.slotBoxes[itemIndex] = new createjs.Shape();
+		this.slotBoxes[itemIndex].graphics.beginFill("rgba(255, 255, 255, 0.21)").beginStroke("black").setStrokeStyle(1).drawRoundRect(0,0,boxWidthPx,boxWidthPx,10);
+		this.slotBoxes[itemIndex].x = currentMarginL;
+		this.slotBoxes[itemIndex].y = 10;
+		this.slotBoxes[itemIndex].scaleX = 0;
+		this.slotBoxes[itemIndex].scaleY = 0;
+		stage.addChild(this.slotBoxes[itemIndex]);
+		// Scale and move image to sit inside this box
+		imageBoxsizePx = boxWidthPx * 0.8;	// Image is 80% of box size
+		item.scale(imageBoxsizePx+"px");
+		
+		imageOffsetX = (boxWidthPx - item.getWidth()) / 2;
+		imageOffsetY = (boxWidthPx - item.getHeight()) / 2;
+		item.x = currentMarginL + imageOffsetX;
+		item.y = this.slotBoxes[itemIndex].y + imageOffsetY;
+		item.setDraggable(true);
+		stage.addChild(item);
+		createjs.Tween.get(this.slotBoxes[itemIndex]).to({scaleX:1, scaleY: 1},100);
+		currentMarginL = currentMarginL + boxWidthPx + boxMarginPx ;
 	};
 	
 	
