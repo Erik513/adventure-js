@@ -165,18 +165,18 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	/**
 	* Check if an item exists with the given ID in this container
-	* @function hasItemWithId
+	* @function findItemWithId
 	* @memberof AdventureGame.Container
 	* @param id string The id of the item we are trying to match
-	* @return true if this item exists in the container. Otherwise false
+	* @return index of the item in inventory or -1 if not found
 	**/
-	p.hasItemWithId = function(id) {
+	p.findItemWithId = function(id) {
 		var 
-			returnVal = false,
+			returnVal = -1,
 			itemIndex;
 		for(itemIndex = 0; itemIndex < this.items.length; itemIndex++) {
 			if(this.items[itemIndex].id === id) {
-				returnVal = true;
+				returnVal = itemIndex;
 				break;
 			}
 		}
