@@ -16,16 +16,6 @@ this.AdventureGame = this.AdventureGame || {};
 		this.initialize(options);
 	};
 	var p = GameBase.prototype;
-	
-	/**
-	* The save document for this game
-	*/
-	AdventureGame.saveGame = {};
-	
-	/**
-	* PouchDB database connction
-	*/
-	AdventureGame.db = null;
 
 	/**
 	* Setup function called by constructor.

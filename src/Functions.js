@@ -13,18 +13,60 @@ this.AdventureGame = this.AdventureGame || {};
 	var 
 		percentRegex = /(\d+\.?\d*)%/,
 		pixelRegex = /(\d+)px/;
-	
+
 	/**
-	* @deprecated Use getXCoord and getYCoord instead
+	* The stage used for this game
 	*/
-	function percentToStageCoord(x, y) {
+	AdventureGame.stage = null;
+
+	/**
+	* Player object used in the game
+	*/
+	AdventureGame.player = null;
+
+	/**
+	* Flag indicating if user input should be accepted (allows game loop to continue animating but block new user actions)
+	*/
+	AdventureGame.inputDisabled = false;
+
+	/**
+	* Game flags set for this game
+	*/
+	AdventureGame.flags = {};
+
+	/**
+	* The save document for this game
+	*/
+	AdventureGame.saveGame = {};
+
+	/**
+	* PouchDB database connction
+	*/
+	AdventureGame.db = null;
+
+
+	/**
+	* Load assets for room and containing items from array describing room
+	* function percentToStageCoord
+	* @param x The X coordinate in percent to convert to pixels
+	* @param y the Y coordinate in percent to convert to pixels
+	* @return object with stage coordinates in pixels for x and y dimenstions. 
+	* @deprecated Use getXCoord and getYCoord instead
+	* @memberof AdventureGame
+	*/
+	AdventureGame.percentToStageCoord = function(x, y) {
 		return {x: AdventureGame.stage.canvas.width * (x / 100), y: AdventureGame.stage.canvas.height * (y/100)};
-	}
+	};
 	
 	/**
 	* Scale image to fit in a box by either pixel or percent values 
+	* function getScaleToFit
+	* @param getScaleToFit string size of the (sqare) box to scale this image to fit. The size may be in pixels (end in 'px') or percentage (end in '%')
+	* @param object The object to be scaled (should implement createjs.DisplayObject prototype)
+	* @return double value indicating the new scale for the object (where 1 is the default size)
+	* @memberof AdventureGame
 	*/
-	function getScaleToFit(boxSize, object) {
+	AdventureGame.getScaleToFit = function(boxSize, object) {
 		var
 			matchesPercent =  boxSize.match(percentRegex),
 			matchesPixels = boxSize.match(pixelRegex),
@@ -51,9 +93,17 @@ this.AdventureGame = this.AdventureGame || {};
 			throw "Invalid scale synatx";
 		}
 		return scaleX < scaleY ? scaleX : scaleY;
-	}
+	};
 	
-	function getXCoord(x) {
+	/**
+	* Get the X coordinate in pixels for a point on the stage.
+	* Percent and pixel values are accepted (while a pixel value will return the same value it allows them to be treated together)
+	* function getXCoord
+	* @param x string distance to get coordinate from left. The distance may be in pixels (end in 'px') or percentage (end in '%')
+	* @return integer indicating the the distance in pixels from the left of the screen for this coordinate
+	* @memberof AdventureGame
+	*/
+	AdventureGame.getXCoord = function(x) {
 		var
 			matchesPercent =  x.match(percentRegex),
 			matchesPixels = x.match(pixelRegex),
@@ -71,9 +121,17 @@ this.AdventureGame = this.AdventureGame || {};
 			throw "Invalid scale synatx";
 		}
 		return pxValue;
-	}
+	};
 	
-	function getYCoord(y) {
+	/**
+	* Get the Y coordinate in pixels for a point on the stage.
+	* Percent and pixel values are accepted (while a pixel value will return the same value it allows them to be treated together)
+	* function getYCoord
+	* @param x string distance to get coordinate from top of the screen. The distance may be in pixels (end in 'px') or percentage (end in '%')
+	* @return integer indicating the the distance in pixels from the top of the screen for this coordinate
+	* @memberof AdventureGame
+	*/
+	AdventureGame.getYCoord = function(y) {
 		var
 			matchesPercent =  y.match(percentRegex),
 			matchesPixels = y.match(pixelRegex),
@@ -91,18 +149,40 @@ this.AdventureGame = this.AdventureGame || {};
 			throw "Invalid scale synatx";
 		}
 		return pxValue;
-	}
+	};
 	
+	/**
+	* Set a game flag to the given value
+	* function setGameFlag
+	* @param key String flagname to set value for
+	* @param value Value to store for this flag
+	* @memberof AdventureGame
+	*/
+	AdventureGame.setGameFlag = function(key, value) {
+		var 
+			flags = AdventureGame.flags,
+			saveGame = AdventureGame.saveGame,
+			db = AdventureGame.db;
+		flags[key] = value;
+		saveGame.flags = flags;
+		db.put(saveGame, function(err, response) {
+			if(err) {
+				console.error("Error updating game flags");
+				console.log(err);
+				console.log(response);
+			}
+		});	
+	};
 	
-	AdventureGame.stage = null;
-	AdventureGame.player = null;
-	AdventureGame.inputDisabled = false;
-	AdventureGame.flags = {};
-	
-	AdventureGame.percentToStageCoord = percentToStageCoord;
-	AdventureGame.getScaleToFit = getScaleToFit;
-	AdventureGame.getXCoord = getXCoord;
-	AdventureGame.getYCoord = getYCoord;
-	
+	/**
+	* Get the value for a given gameflag
+	* function getGameFlag
+	* @param key String flagname to get value for
+	* @return Value stored in this flag
+	* @memberof AdventureGame
+	*/
+	AdventureGame.getGameFlag = function(key) {
+		return AdventureGame.saveGame.flags[key];
+	};
 	
 }());
