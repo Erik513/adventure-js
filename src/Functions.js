@@ -30,15 +30,18 @@ this.AdventureGame = this.AdventureGame || {};
 	AdventureGame.inputDisabled = false;
 
 	/**
-	* Game flags set for this game
-	*/
-	AdventureGame.flags = {};
-
-	/**
 	* The save document for this game
 	*/
-	AdventureGame.saveGame = {};
-
+	AdventureGame.saveGame = {
+						_id: 'game_unknown_'+Date.now(),
+						name: 'undefined',
+						points: 0,
+						inventory: [],
+						items: {},
+						flags: {},
+						character: {}
+	};
+	
 	/**
 	* PouchDB database connction
 	*/
@@ -160,11 +163,9 @@ this.AdventureGame = this.AdventureGame || {};
 	*/
 	AdventureGame.setGameFlag = function(key, value) {
 		var 
-			flags = AdventureGame.flags,
 			saveGame = AdventureGame.saveGame,
 			db = AdventureGame.db;
-		flags[key] = value;
-		saveGame.flags = flags;
+		saveGame.flags[key] = value;
 		db.put(saveGame, function(err, response) {
 			if(err) {
 				console.error("Error updating game flags");
