@@ -68,6 +68,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* * image URI Path to image to be shown in this dialog
 	* * question string Flag indicating if a form asking the player a question should be shown. Valid values are 'radio' and 'text'
 	* * answers Object[] Array of valid answers for this question. Each object should have a value and text set
+	* * onClose function Callback function when dialog is closed
 	* * domContent HTMLDom Additional DOM content to be shown in this dialog
 	* @function initialize
 	* @memberof AdventureGame.Dialog
@@ -152,6 +153,10 @@ this.AdventureGame = this.AdventureGame || {};
 				contentDiv.appendChild(questionForm);
 			}
 			
+			if(options.onClose) {
+				this.onClose = options.onClose;
+			}
+			
 			// Add extra DOM content if supplied
 			if(options.domContent) {
 				contentDiv.appendChild(options.domContent);
@@ -185,11 +190,16 @@ this.AdventureGame = this.AdventureGame || {};
 	/**
 	* @memberof AdventureGame.Dialog
 	*/
-	p.close = function() {
+	p.close = function(evt) {
 		AdventureGame.stage.removeChild(this.domElem);
 		document.body.removeChild(this.div);
 		if(this.onClose) {
-			this.onClose();
+			this.onClose({
+				type: evt.type,
+				answer: evt.answer || null,
+				correct: evt.correct || null,
+				dialog: this
+			});
 		}
 	};
 
@@ -200,7 +210,6 @@ this.AdventureGame = this.AdventureGame || {};
 	 * @return true if the answer is correct else false
 	 */
 	p.evaluateAnswer = function() {
-		this.close();
 		var 
 			correct = false,
 			inputs,
@@ -220,41 +229,37 @@ this.AdventureGame = this.AdventureGame || {};
 				}
 			}
 		}
-		if(correct) {
-			this.correctCallback();
-		} else {
-			this.incorrectCallback();
-		}
+		this.close({
+			type: 'answered',
+			answer: inputs[inputIndex].value,
+			correct: correct
+		});
+		
 		return correct;
 	};
 
+
 	/**
-	 * Default callback function if the correct answer is selected.
+	 * Default callback function when the dialog is closed.
+	 * If the dialog was a question shows a new dialog with the results
 	 * This may be overwritten by the constructor/initialize with the correctCallback configuration option
 	 * @memberof AdventureGame.Dialog
 	 * @return void
 	 */	
-	p.correctCallback = function() {
-		var correctDialog = new Dialog({
-			image: this.image,
-			text:'Correct'
-		});
-		correctDialog.show();
+	p.onClose = function(evt) {
+		if(evt.correct) {
+			(new Dialog({
+				image: this.image,
+				text:'Correct'
+			})).show();
+		} else if(evt.correct === false) {
+			(new Dialog({
+				image: this.image,
+				text:'Sorry, that\'s incorrect'
+			})).show();
+		}
 	};
 
-	/**
-	 * Default callback function if the incorrect answer is selected.
-	 * This may be overwritten by the constructor/initialize with the incorrectCallback configuration option
-	 * @memberof AdventureGame.Dialog
-	 * @return void
-	 */
-	p.incorrectCallback = function() {
-		var incorrectCallback = new Dialog({
-			image: this.image,
-			text:'Sorry, that\'s incorrect'
-		});
-		incorrectCallback.show();		
-	};
 	
 	AdventureGame.Dialog = Dialog;
 }());
