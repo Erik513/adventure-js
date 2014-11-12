@@ -12,8 +12,8 @@ this.AdventureGame = this.AdventureGame || {};
 	
 	var 
 		negativeRegex = /\-\d*/,
-		percentRegex = /(\d+\.?\d*)%/,
-		pixelRegex = /(\d+)px/;
+		percentRegex = /([0-9\.]+\.?\d*)%/,
+		pixelRegex = /([0-9\.]+)px/;
 
 	/**
 	* The stage used for this game
@@ -88,11 +88,11 @@ this.AdventureGame = this.AdventureGame || {};
 				throw "Unable to size item by percent as stage is not avilable";
 			}
 			canvas = AdventureGame.stage.canvas;
-			scaleX = (canvas.height * (parseInt(matchesPercent[1], 10) / 100) ) / bounds.height;
-			scaleY = (canvas.width * (parseInt(matchesPercent[1], 10) / 100) ) / bounds.width;
+			scaleX = (canvas.height * (parseFloat(matchesPercent[1]) / 100) ) / bounds.height;
+			scaleY = (canvas.width * (parseFloat(matchesPercent[1]) / 100) ) / bounds.width;
 		} else if (matchesPixels) {
-			scaleX = (parseInt(matchesPercent[1], 10) / bounds.width);
-			scaleY = (parseInt(matchesPercent[1], 10) / bounds.height);
+			scaleX = (parseFloat(matchesPercent[1]) / bounds.width);
+			scaleY = (parseFloat(matchesPercent[1]) / bounds.height);
 		} else {
 			throw "Invalid scale synatx";
 		}

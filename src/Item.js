@@ -308,13 +308,16 @@ this.AdventureGame = this.AdventureGame || {};
 		if(!scale) {
 			scale = this.initialScale;
 		}
+		// It would be nice to use AdventureGame.getBoxScale for this but it can't get the dimensions of the image (this.image.height and this.image.width)
+		console.log(this.id+": "+scale);
 		var
-			matchesPercent =  scale.match(/(\d+)%/),
-			matchesPixels = scale.match(/(\d+)px/),
+			matchesPercent =  scale.match(/([0-9\.]+)%/),
+			matchesPixels = scale.match(/([0-9\.]+)px/),
 			canvas,
 			scaleX,
 			scaleY;
 		if (matchesPercent) {
+			console.log("Scale by percent");
 			if(!AdventureGame.stage) {
 				throw "Unable to size item by percent as stage is not avilable";
 			}
@@ -325,7 +328,7 @@ this.AdventureGame = this.AdventureGame || {};
 			this.scaleX = scaleX < scaleY ? scaleX : scaleY;
 			this.scaleY = this.scaleX;
 		} else if (matchesPixels) {
-			console.log("Pixels");
+			console.log("Pixels: "+matchesPixels[1]);
 			scaleX = (matchesPixels[1] / this.image.width);
 			scaleY = (matchesPixels[1] / this.image.height);
 			this.scaleX = scaleX < scaleY ? scaleX : scaleY;
@@ -333,7 +336,7 @@ this.AdventureGame = this.AdventureGame || {};
 		} else {
 			throw "Invalid scale synatx";
 		}
-
+		
 //		this.scaleX = scale;
 //		this.scaleY = scale;
 	};
