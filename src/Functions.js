@@ -11,6 +11,7 @@ this.AdventureGame = this.AdventureGame || {};
 	"use strict";
 	
 	var 
+		negativeRegex = /\-\d*/,
 		percentRegex = /(\d+\.?\d*)%/,
 		pixelRegex = /(\d+)px/;
 
@@ -64,7 +65,7 @@ this.AdventureGame = this.AdventureGame || {};
 	/**
 	* Scale image to fit in a box by either pixel or percent values 
 	* function getScaleToFit
-	* @param getScaleToFit string size of the (sqare) box to scale this image to fit. The size may be in pixels (end in 'px') or percentage (end in '%')
+	* @param boxSize string size of the (sqare) box to scale this image to fit. The size may be in pixels (end in 'px') or percentage (end in '%')
 	* @param object The object to be scaled (should implement createjs.DisplayObject prototype)
 	* @return double value indicating the new scale for the object (where 1 is the default size)
 	* @memberof AdventureGame
@@ -110,6 +111,7 @@ this.AdventureGame = this.AdventureGame || {};
 		var
 			matchesPercent =  x.match(percentRegex),
 			matchesPixels = x.match(pixelRegex),
+			isNegative = x.match(negativeRegex),
 			canvas,
 			pxValue;
 		if (matchesPercent) {
@@ -122,6 +124,10 @@ this.AdventureGame = this.AdventureGame || {};
 			pxValue = matchesPercent[1];
 		} else {
 			throw "Invalid scale synatx";
+		}
+		// We this is a negative value we should probably make it one
+		if(isNegative) {
+			pxValue = pxValue * -1;
 		}
 		return pxValue;
 	};
@@ -138,6 +144,7 @@ this.AdventureGame = this.AdventureGame || {};
 		var
 			matchesPercent =  y.match(percentRegex),
 			matchesPixels = y.match(pixelRegex),
+			isNegative = y.match(negativeRegex),
 			canvas,
 			pxValue;
 		if (matchesPercent) {
@@ -151,29 +158,50 @@ this.AdventureGame = this.AdventureGame || {};
 		} else {
 			throw "Invalid scale synatx";
 		}
+		// We this is a negative value we should probably make it one
+		if(isNegative) {
+			pxValue = pxValue * -1;
+		}
 		return pxValue;
 	};
 	
 	/**
+	* Save the game file to the database (and hopefully synch to couchdb)
+	* @function saveGameToDB
+	* @return Save game document
+	* @memberof AdventureGame
+	*/
+	AdventureGame.saveGameToDB = function() {
+		var 
+			db = AdventureGame.db,
+			doc = AdventureGame.saveGame;
+		return db.get(doc._id).then(function (origDoc) {
+			doc._rev = origDoc._rev;
+			return db.put(doc);
+		}).catch(function (err) {
+			if (err.status === 409) {
+				return AdventureGame.saveGameToDB();
+			} else { // new doc
+				return db.put(doc);
+			}
+		});
+	};
+	
+	/**
 	* Set a game flag to the given value
-	* function setGameFlag
+	* @function setGameFlag
 	* @param key String flagname to set value for
 	* @param value Value to store for this flag
 	* @memberof AdventureGame
 	*/
 	AdventureGame.setGameFlag = function(key, value) {
 		var 
-			saveGame = AdventureGame.saveGame,
-			db = AdventureGame.db;
+			saveGame = AdventureGame.saveGame;
 		saveGame.flags[key] = value;
-		db.put(saveGame, function(err, response) {
-			if(err) {
-				console.error("Error updating game flags");
-				console.log(err);
-				console.log(response);
-			}
-		});	
+		console.log(saveGame);
+		AdventureGame.saveGameToDB(saveGame);
 	};
+	
 	
 	/**
 	* Get the value for a given gameflag
@@ -186,4 +214,20 @@ this.AdventureGame = this.AdventureGame || {};
 		return AdventureGame.saveGame.flags[key];
 	};
 	
+	
+	/**
+	* Add points to the players game record and save
+	* @function addPoints
+	* @param points integer the number of points to add
+	* @memberof AdventureGame
+	*/
+	AdventureGame.addPoints = function(points) {
+		var 
+			saveGame = AdventureGame.saveGame;
+		saveGame.points = saveGame.points + points;
+		console.log(saveGame);
+		AdventureGame.saveGameToDB(saveGame);
+	};
+
+
 }());

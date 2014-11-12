@@ -86,6 +86,14 @@ this.AdventureGame = this.AdventureGame || {};
 	p.playerData = null;
 	
 	/**
+	 * Text element showing score to users
+	 * @name scoreText
+	 * @type createjs.Text
+	 * @memberof AdventureGame.Game
+	 **/
+	p.scoreText = null;
+	
+	/**
 	 * Initlization function of parent GameBase class
 	 * @name GameBase_initialize
 	 * @type fucntion
@@ -251,9 +259,9 @@ this.AdventureGame = this.AdventureGame || {};
 			this.roomData.items = [];
 			console.log(AdventureGame.saveGame.inventory);
 			for(item in items) {
-				if(items.hasOwnProperty(item) 
-					&& AdventureGame.player.inventory.findItemWithId(item) === -1
-					&& AdventureGame.saveGame.inventory.indexOf(item) < 0
+				if(items.hasOwnProperty(item) && 
+					AdventureGame.player.inventory.findItemWithId(item) === -1 &&
+					AdventureGame.saveGame.inventory.indexOf(item) < 0
 				) {
 					this.roomData.items[item] = new AdventureGame.Item(items[item]);
 				}
@@ -274,7 +282,19 @@ this.AdventureGame = this.AdventureGame || {};
 			player.addEventListener('click', player.onClick.bind('player'));
 		}
 		
+		this.scoreText = new createjs.Text(AdventureGame.saveGame.points.toString(), "30px 'Coming Soon'", "#FFFFFF");	// Create score counter before loading room in case initial event wants to use it
 		this.currentRoom.load(AdventureGame.player, this.door);
+		
+		// Now draw score timer on top of the room
+		this.scoreText.scaleX = AdventureGame.getScaleToFit('10%',this.scoreText);
+		this.scoreText.scaleY = this.scoreText.scaleX;
+		this.scoreText.x = AdventureGame.getXCoord('1%');
+		this.scoreText.y = AdventureGame.getYCoord('1%');
+		console.log(this.scoreText.text);
+		console.log(this.scoreText);
+		this.stage.addChild(this.scoreText);
+		
+		
 		console.log(AdventureGame.player.inventory);
 		console.log(AdventureGame.saveGame.inventory);
 		this.showInventory();
@@ -428,6 +448,31 @@ this.AdventureGame = this.AdventureGame || {};
 		}
 	};
 	
+	/**
+	* Add points to the score counter displayed on the stage.
+	* This is a recursive function used to show the counter incrementing (or decrementing) the target score.
+	* It does not update the actual score. If this is desired AdventureGame.Game.addPoints should be used instead
+	* @function addPointsToCounter
+	* @param target integer The target score to increment or decrement counter to
+	* @param countInterval integer The amount of time to wait in miliseconds between each count step
+	* @memberof AdventureGame.Game
+	**/
+	p.addPointsToCounter = function(target,countInterval) {
+		var 
+			current = parseInt(this.scoreText.text, 10),
+			increment = target > current ? 1 : -1;
+		this.scoreText.text = current + increment;
+		if(current + increment !== target) {
+			setTimeout(function() {
+				this.addPointsToCounter(target, countInterval);
+			}.bind(this), countInterval);
+		}
+	};
+	
+	p.addPoints = function(points) {
+		AdventureGame.addPoints(points);
+		this.addPointsToCounter(AdventureGame.saveGame.points, 100);
+	};
 	
 	AdventureGame.Game = Game;
 	

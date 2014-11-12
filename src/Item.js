@@ -347,24 +347,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* @memberof AdventureGame.Item
 	*/
 	p.setX = function(x) {
-		var
-			matchesPercent =  x.match(/(\d+)%/),
-			matchesPixels = x.match(/(\d+)px/),
-			canvas,
-			pxValue;
-		if (matchesPercent) {
-			if(!AdventureGame.stage) {
-				throw "Unable to size item by percent as stage is not avilable";
-			}
-			canvas = AdventureGame.stage.canvas;
-			pxValue = canvas.width * (matchesPercent[1] / 100);
-			this.x = pxValue;
-		} else if (matchesPixels) {
-			console.log("Pixels");
-			this.x = matchesPercent[1];
-		} else {
-			throw "Invalid scale synatx";
-		}
+		this.x = AdventureGame.getXCoord(x);
 	};
 	
 	/**
@@ -376,24 +359,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* @memberof AdventureGame.Item
 	*/
 	p.setY = function(y) {
-		var
-			matchesPercent =  y.match(/(\d+)%/),
-			matchesPixels = y.match(/(\d+)px/),
-			canvas,
-			pxValue;
-		if (matchesPercent) {
-			if(!AdventureGame.stage) {
-				throw "Unable to size item by percent as stage is not avilable";
-			}
-			canvas = AdventureGame.stage.canvas;
-			pxValue = canvas.height * (matchesPercent[1] / 100);
-			this.y = pxValue;
-		} else if (matchesPixels) {
-			console.log("Pixels");
-			this.y = matchesPercent[1];
-		} else {
-			throw "Invalid scale synatx";
-		}
+		this.y = AdventureGame.getYCoord(y);
 	};
 	
 	/**

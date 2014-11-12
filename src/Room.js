@@ -104,11 +104,14 @@ this.AdventureGame = this.AdventureGame || {};
 		if(!options.background) {
 			throw "Background not set for room";
 		}
-		if(!options.floor) {
-			throw "Floor is not set for room";
-		}
 		this.background = new createjs.Bitmap(options.background);
-		this.floor = this.createFloor(options.floor);
+		if(options.floor) {
+			this.floor = options.floor;
+		} else if(options.floorCoords){
+			this.floor = this.createFloor(options.floorCoords);
+		} else {
+			throw "No floor or coordinates for floor are set";
+		}
 		this.items = (options.items !== undefined ? options.items : {});
 		this.characters = (options.characters !== undefined ? options.characters : {});
 		this.doors = (options.doors !== undefined ? options.doors : {});
