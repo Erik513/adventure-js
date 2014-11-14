@@ -94,6 +94,14 @@ this.AdventureGame = this.AdventureGame || {};
 	p.scoreText = null;
 	
 	/**
+	 * Array of images and their positions to be overlayed on the game
+	 * @name overlayImages
+	 * @type Object[]
+	 * @memberof AdventureGame.Game
+	 **/
+	p.overlayImages = [];
+	
+	/**
 	 * Initlization function of parent GameBase class
 	 * @name GameBase_initialize
 	 * @type fucntion
@@ -106,6 +114,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* ## In addition to those from AdventureGame.GameBase the following options are accepted:
 	* * player AdventureGame.Character The player character for this game
 	* * itemList AdventureGame.Item[] Array of items used in this game (used when )
+	* * overlayImages Object[] Array of objects containing image source and coordinates ({src: sourch, x: xCoord, y: yCoord})
 	* @function initialize
 	* @memberof AdventureGame.Game
 	* @param options Object containing configuraiton options
@@ -128,6 +137,9 @@ this.AdventureGame = this.AdventureGame || {};
 		}
 		if(options.itemList) {
 			this.itemList = options.itemList;
+		}
+		if(options.overlayImages) {
+			this.overlayImages = options.overlayImages;
 		}
 		console.log("Seting up game");
 	};
@@ -195,7 +207,22 @@ this.AdventureGame = this.AdventureGame || {};
 		var manifest = [],
 			queue = new createjs.LoadQueue(),
 			item,
+			overlayIndex,
+			assetIndex,
 			character;
+			
+		// Load extra assets
+		for(assetIndex = 0; assetIndex > this.extraAssets.length; assetIndex++) {
+			manifest.push({src: this.extraAssets[assetIndex], id: 'extraAsset'+assetIndex});
+			this.assets.images['extraAsset'+assetIndex] = {src: this.extraAssets[assetIndex]};
+		}
+		
+		// Load game overlay images
+		for(overlayIndex = 0; overlayIndex < this.overlayImages.length; overlayIndex++) {
+			manifest.push({src: this.overlayImages[overlayIndex].src, id:'overlay'+overlayIndex});
+			this.assets.images['overlay'+overlayIndex] = this.overlayImages[overlayIndex];
+		}
+						
 		this.roomData = array;
 		// Load room background and player image
 		this.assets.images.roomBG = {src: array.background};
@@ -237,7 +264,8 @@ this.AdventureGame = this.AdventureGame || {};
 			items,
 			item,
 			characters,
-			charID;
+			charID,
+			overlayIndex;
 		// Load player if not yet loaded
 		if(!player) {
 			player = new AdventureGame.Character(this.playerData);
@@ -285,10 +313,18 @@ this.AdventureGame = this.AdventureGame || {};
 		this.scoreText = new createjs.Text(AdventureGame.saveGame.points.toString(), "30px 'Coming Soon'", "#FFFFFF");	// Create score counter before loading room in case initial event wants to use it
 		this.currentRoom.load(AdventureGame.player, this.door);
 		
+		// Add overlay
+		for(overlayIndex = 0; overlayIndex < this.overlayImages.length; overlayIndex++) {
+			this.overlayImages[overlayIndex].img = new createjs.Bitmap(this.overlayImages[overlayIndex].src);
+			this.overlayImages[overlayIndex].img.scaleX = this.currentRoom.background.scaleX;
+			this.overlayImages[overlayIndex].img.scaleY = this.currentRoom.background.scaleY;
+			this.stage.addChild(this.overlayImages[overlayIndex].img);
+		}
+		
 		// Now draw score timer on top of the room
 		this.scoreText.scaleX = AdventureGame.getScaleToFit('10%',this.scoreText);
 		this.scoreText.scaleY = this.scoreText.scaleX;
-		this.scoreText.x = AdventureGame.getXCoord('1%');
+		this.scoreText.x = AdventureGame.getXCoord('2%');
 		this.scoreText.y = AdventureGame.getYCoord('1%');
 		console.log(this.scoreText.text);
 		console.log(this.scoreText);
@@ -369,6 +405,7 @@ this.AdventureGame = this.AdventureGame || {};
 		// Scale and move image to sit inside this box
 		item = AdventureGame.player.inventory.items[itemIndex];
 		imageBoxsizePx = boxWidthPx * 0.8;	// Image is 80% of box size
+		console.log("Scaling box");
 		item.scale(imageBoxsizePx+"px");
 		imageOffsetX = (boxWidthPx - item.getWidth()) / 2;
 		imageOffsetY = (boxWidthPx - item.getHeight()) / 2;

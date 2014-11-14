@@ -62,6 +62,54 @@ this.AdventureGame = this.AdventureGame || {};
 	p.answers = null;
 	
 	/**
+	 * CSS class to set on dialog div
+	 * @name dialogClass
+	 * @type String
+	 * @memberof AdventureGame.Dialog
+	 **/
+	p.dialogClass = 'gamedialog';
+	
+	/**
+	 * The distance in percent to position the dialog from top 
+	 * @name distanceFromTop
+	 * @type int
+	 * @memberof AdventureGame.Dialog
+	 **/
+	p.distanceFromTop = 20;
+
+	/**
+	 * The distance in percent to position the dialog from left
+	 * @name distanceFromLeft
+	 * @type int
+	 * @memberof AdventureGame.Dialog
+	 **/
+	p.distanceFromLeft = 20;
+
+	/**
+	 * The width in percent to draw the dialog
+	 * @name width
+	 * @type int
+	 * @memberof AdventureGame.Dialog
+	 **/
+	p.width = 60;
+
+	/**
+	 * The maximum permitted height in percent (before scrolling) allowed for dialog
+	 * @name maxHeight
+	 * @type int
+	 * @memberof AdventureGame.Dialog
+	 **/
+	p.maxHeight = 40;
+	
+	/**
+	 * Flag indicating if the close option for the dialog should be disabled
+	 * @name disableClose
+	 * @type boolean
+	 * @memberof AdventureGame.Dialog
+	 **/
+	p.disableClose = false;
+	
+	/**
 	 * Setup dialog object according to the supplied options. Generally called by the constructor
 	* ## The following options are accepted:
 	* * div HTMLDom object to show instead of dialog
@@ -69,7 +117,13 @@ this.AdventureGame = this.AdventureGame || {};
 	* * question string Flag indicating if a form asking the player a question should be shown. Valid values are 'radio' and 'text'
 	* * answers Object[] Array of valid answers for this question. Each object should have a value and text set
 	* * onClose function Callback function when dialog is closed
+	* * dialogClass String CSS class(es) to add to the top dialog container (default 'gameDialog')
+	* * top int Distance to show dialog from the top of screen in percent
 	* * domContent HTMLDom Additional DOM content to be shown in this dialog
+	* * distanceFromTop int the distance in percent to position the dialog from top (default 20)
+	* * distanceFromLeft int the distance in percent to position the dialog from left (default 20)
+	* * width int the width in percent to draw the dialog (default 60)
+	* * maxHeight the maximum permitted height in percent (before scrolling) allowed for dialog (default 40)
 	* @function initialize
 	* @memberof AdventureGame.Dialog
 	* @param options Object containing configuraiton options
@@ -96,8 +150,17 @@ this.AdventureGame = this.AdventureGame || {};
 			this.div = options.div.cloneNode(true);	// In case this is already in the div clone it so we don't accidently delete it later
 		} else {
 			this.div = document.createElement('div');
-			this.div.className = 'gamedialog';
 			
+			// Set class
+			if(options.dialogClass) {
+				this.dialogClass = options.dialogClass;
+			}
+			this.div.className = this.dialogClass;
+			
+			// Setup close link
+			if(options.disableClose) {
+				this.disableClose = options.disableClose;
+			}
 			if(!this.disableClose) {
 				closeIcon = document.createElement('i');
 				closeIcon.className = 'fa fa-close fa-2x';
@@ -163,10 +226,31 @@ this.AdventureGame = this.AdventureGame || {};
 			}
 			this.div.appendChild(contentDiv);
 		}
-		this.div.style.width = (60 / 100 * stage.canvas.width)+'px';
-		this.div.style.left = (20 / 100 * stage.canvas.width)+'px';
-		this.div.style.top = (20 / 100 * stage.canvas.height)+'px';
-		this.div.style.maxHeight = (40/100 * stage.canvas.height)+'px';
+		
+		// Set positioning and dimensions
+		if(options.width) {
+			this.width = options.width;
+		}
+		if(options.distanceFromLeft) {
+			this.distanceFromLeft = options.distanceFromLeft;
+		}
+		if(options.distanceFromTop) {
+			this.distanceFromTop = options.distanceFromTop;
+		}
+		if(options.maxHeight) {
+			this.maxHeight = options.maxHeight;
+		}
+		/*
+		this.div.style.width = AdventureGame.getXCoord(this.width);
+		this.div.style.left = AdventureGame.getXCoord(this.left);
+		this.div.style.top = AdventureGame.getYCoord(this.top);
+		this.div.style.maxHeight = AdventureGame.getYCoord(this.maxHeight);
+		*/
+		
+		this.div.style.width = (this.width / 100 * stage.canvas.width)+'px';
+		this.div.style.left = (this.distanceFromLeft / 100 * stage.canvas.width)+'px';
+		this.div.style.top = (this.distanceFromTop / 100 * stage.canvas.height)+'px';
+		this.div.style.maxHeight = (this.maxHeight / 100 * stage.canvas.height)+'px';
 	};
 
 	/**

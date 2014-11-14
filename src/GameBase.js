@@ -16,6 +16,14 @@ this.AdventureGame = this.AdventureGame || {};
 		this.initialize(options);
 	};
 	var p = GameBase.prototype;
+	
+	/**
+	* Array of additional assets required by this game that are not automatically loaded
+	* @name extraAssets
+	* @type String[]
+	* @memberof AdventureGame.GameBase
+	**/
+	p.extraAssets = [];
 
 	/**
 	* Setup function called by constructor.
@@ -28,7 +36,8 @@ this.AdventureGame = this.AdventureGame || {};
 	* * loop function Gameloop functio for this game
 	* * exit function Callback function when the game exits
 	* * defaultSize Object The default size of this game in options.defaultSize.x and options.defaultSize.y
-	* * pageScale int The amount to scale all images in this game (defaults to 1)
+	* * pageScale int The amount to scale all images in this game (defaults to 1) (depcrecated: use percent sizing instead)
+	* * extraAssets String[] Array of additional assets that are not autoloaded
 	* @function initialize
 	* @memberof AdventureGame.GameBase
 	* @param options Object containing configuraiton options
@@ -55,6 +64,9 @@ this.AdventureGame = this.AdventureGame || {};
 		}
 		if(options.exit) {
 			this.setup = options.exit;
+		}
+		if(options.extraAssets) {
+			this.extraAssets = options.extraAssets;
 		}
 		this.defaultSize = options.defaultSize || null;
 		this.pageScale = 1;		// Scale all images by this amount (used to set to page scale)

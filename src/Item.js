@@ -319,7 +319,7 @@ this.AdventureGame = this.AdventureGame || {};
 		if (matchesPercent) {
 			console.log("Scale by percent");
 			if(!AdventureGame.stage) {
-				throw "Unable to size item by percent as stage is not avilable";
+				throw "Unable to size item by percent as stage is not available";
 			}
 			canvas = AdventureGame.stage.canvas;
 			scaleX = (canvas.height * (matchesPercent[1] / 100) ) / this.image.height;
