@@ -109,6 +109,8 @@ this.AdventureGame = this.AdventureGame || {};
 	 **/
 	p.disableClose = false;
 	
+	p.closeIconClass = 'fa fa-close fa-2x';
+	
 	/**
 	 * Setup dialog object according to the supplied options. Generally called by the constructor
 	* ## The following options are accepted:
@@ -161,9 +163,12 @@ this.AdventureGame = this.AdventureGame || {};
 			if(options.disableClose) {
 				this.disableClose = options.disableClose;
 			}
+			if(options.closeIconClass) {
+				this.closeIconClass = options.closeIconClass;
+			}
 			if(!this.disableClose) {
 				closeIcon = document.createElement('i');
-				closeIcon.className = 'fa fa-close fa-2x';
+				closeIcon.className = 'dialogClose '+this.closeIconClass;
 				$(closeIcon).on('click', this.close.bind(this));
 				this.div.appendChild(closeIcon);
 			}
