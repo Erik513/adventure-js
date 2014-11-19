@@ -170,6 +170,7 @@ this.AventureGame = this.AdventureGame || {};
 			console.log("Creating inventory for "+this.name);
 		}
 		this.inventory = options.inventory || new AdventureGame.Container({
+			id: 'inventory',
 			name: this.name+'\'s Inventory',
 			slots: 5
 		});
@@ -283,35 +284,58 @@ this.AventureGame = this.AdventureGame || {};
 		if(this.nextPosition !== null) {
 			var characterPosition = {x:this.getXLocation(), y:this.getYLocation()},
 				distanceX = characterPosition.x - this.nextPosition.x,
-				distanceY = characterPosition.y - this.nextPosition.y;
+				distanceY = characterPosition.y - this.nextPosition.y,
+				direction = {left: 0, right: 0, up: 0, down: 0};
 			
 			if(distanceX > 0) {
 				// Move left
 				characterPosition.x = distanceX > this.moveDistance ? characterPosition.x - this.moveDistance : this.nextPosition.x;
-				if(this.currentAnimation !== 'left') {
-					console.log("Animating left");
-					console.log("setting animation to left");
-					this.gotoAndPlay('left');
-				}
+				direction.left = 1;
 			} else if(distanceX < 0 ) {
 				// Move right
 				characterPosition.x = -distanceX > this.moveDistance ?  characterPosition.x + this.moveDistance : this.nextPosition.x;
-				if(this.currentAnimation !== 'right') {
-					console.log("setting animation to right");
-					this.gotoAndPlay('right');
-				}
-			} else {
-				if(this.currentAnimation !== 'idle') {
-					console.log("setting animation to idle");
-					this.gotoAndPlay('idle');
-				}
+				direction.right = 1;
 			}
 			if(distanceY > 0) {
 				// Move up
 				characterPosition.y = distanceY > this.moveDistance ? characterPosition.y - this.moveDistance : this.nextPosition.y;
+				direction.up = 1;
 			} else if(distanceY < 0 ) {
 				// Move Down
 				characterPosition.y = -distanceY > this.moveDistance ?  characterPosition.y + this.moveDistance : this.nextPosition.y;
+				direction.down = 1;
+			}
+			
+			// Now set animation
+			if(direction.left) {
+				if(this.currentAnimation !== 'left') {
+					console.log("setting animation to left");
+					this.gotoAndPlay('left');
+				}
+			} else if(direction.right) {
+				// Set idle animation if not already set
+				if(this.currentAnimation !== 'right') {
+					console.log("setting animation to right");
+					this.gotoAndPlay('right');
+				}
+			} else if(direction.up) {
+				// Set idle animation if not already set
+				if(this.currentAnimation !== 'up') {
+					console.log("setting animation to up");
+					this.gotoAndPlay('up');
+				}
+			} else if(direction.down) {
+				// Set idle animation if not already set
+				if(this.currentAnimation !== 'down') {
+					console.log("setting animation to down");
+					this.gotoAndPlay('down');
+				}
+			} else {
+				// Set idle animation if not already set
+				if(this.currentAnimation !== 'idle') {
+					console.log("setting animation to idle");
+					this.gotoAndPlay('idle');
+				}
 			}
 			
 			// If we are at the destination
