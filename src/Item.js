@@ -179,7 +179,9 @@ this.AdventureGame = this.AdventureGame || {};
 			objects = AdventureGame.stage.getObjectsUnderPoint(evt.stageX, evt.stageY);
 		for(objIndex = 0; objIndex < objects.length; objIndex++) {
 			if(objects[objIndex] !== this) {
-				response = response || objects[objIndex].activate(this);
+				if(objects[objIndex] instanceof AdventureGame.Item){
+					response = response || objects[objIndex].activate(this);
+				}
 			}
 		}
 		if(!response) {
