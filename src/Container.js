@@ -22,6 +22,14 @@ this.AdventureGame = this.AdventureGame || {};
 	var p = Container.prototype;
 	
 	/**
+	* Unique identifier used to save and load this container
+	* @nane id
+	* @type string
+	* @memberof AdventureGame.Container
+	**/
+	p.id = null;
+	
+	/**
 	 * The unique name for this container
 	 * @name name
 	 * @type string
@@ -43,7 +51,8 @@ this.AdventureGame = this.AdventureGame || {};
 	 * @type AdventureGame.Item[]
 	 * @memberof AdventureGame.Container
 	 **/
-	p.items = [];
+	p.items = null;
+	
 		
 	/**
 	* Setup function called by constructor
@@ -51,12 +60,17 @@ this.AdventureGame = this.AdventureGame || {};
 	* * name string The container name (required)
 	* * numSlows int The number of item slots in this container (Default: 10)
 	* * items AdventureGame.Item[] The items currently held in this container
+	* * open function Function to show when opening container if the default dialog is not desired
 	* @function initialize
 	* @memberof AdventureGame.Container
 	* @param options Object containing configuraiton options
 	* @return void
 	*/
 	p.initialize = function(options) {
+		if(!options.id) {
+			throw "No ID set for container";
+		}
+		this.id = options.id;
 		if(!options.name) {
 			throw "No name set for container";
 		}
@@ -66,10 +80,15 @@ this.AdventureGame = this.AdventureGame || {};
 		}
 		if(options.items) {
 			this.items = options.items;
+		} else {
+			this.items = [];
 		}
 		// If there are more items than slots resize the container to fit them all
 		if(this.items.length > this.slots) {
 			this.slots = options.items.length;
+		}
+		if(options.open) {
+			this.open = options.open;
 		}
 	};
 
@@ -81,7 +100,10 @@ this.AdventureGame = this.AdventureGame || {};
 	* @return void
 	*/
 	p.addItem = function(item) {
-		var returnVal = -1, i;
+		var 
+			returnVal = -1, 
+			i,
+			oldContainer = item.parentContainer;
 		if(!item instanceof AdventureGame.Item) {
 			console.log(item);
 			throw "Invalid item";
@@ -90,14 +112,19 @@ this.AdventureGame = this.AdventureGame || {};
 			// Find the next empty slot in the inventory
 			for(i=0; i < this.items.length; i++) {
 				if(this.items[i] === null) {
-					item.slot = i;
-					this.items[i] = item;
-					return i;
+					break;	// This is the slot to stop at
 				}
 			}
+			// Now remove from old container before adding to this one
+			if(oldContainer) {
+				oldContainer.removeItem(item);
+				oldContainer.updateSave(false);
+			}
+			// Now add to this container
 			item.slot = i;
 			item.parentContainer = this;
 			this.items[i] = item;
+			this.updateSave(true);
 			returnVal = i;
 		} else {
 			console.log("Container full");
@@ -117,13 +144,39 @@ this.AdventureGame = this.AdventureGame || {};
 		var 
 			returnVal = -1,
 			slot = item.slot;
-		if(item.currentContainer === this && this.items[item.slot] === item) {
+		if(item.parentContainer === this && this.items[item.slot] === item) {
 			this.items[item.slot] = null;
-			item.currentContainer = null;
+			item.parentContainer = null;
 			item.slot = null;
 			returnVal = slot;
+			
+			// Update save game
 		}
 		return returnVal;
+	};
+	
+	/**
+	* Update the contents of this container in the save game
+	* @function updateSave
+	* @param writeToDB boolean flag indicating if the save file should be written to the database after updating
+	* @memberof AdventureGame.Container
+	**/
+	p.updateSave = function(writeToDB) {
+		var 
+			itemList = [],
+			i;
+		if(AdventureGame.saveGame) {
+			// Go through each slot and if there is an item add it to the list of current items
+			for(i=0; i<this.items.length; i++) {
+				if(this.items[i]) {
+					itemList.push(this.items[i].id);
+				}
+			}
+			AdventureGame.saveGame.containers[this.id] = itemList;
+			if(writeToDB) {
+				AdventureGame.saveGameToDB();
+			}
+		}
 	};
 	
 	
