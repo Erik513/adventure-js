@@ -137,6 +137,83 @@
     
 
     
+        <h3 class="subsection-title">Members</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="extraAssets"><span class="type-signature">(static) </span>extraAssets<span class="type-signature"> :Array.&lt;String></span></h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Array of additional assets required by this game that are not automatically loaded</p>
+    </div>
+    
+
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">Array.&lt;String></span>
+
+
+            </li>
+        </ul>
+    
+
+    
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line20">line 20</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+</dd>
+
+        </dl>
+    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -239,7 +316,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line128">line 128</a>
+        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line140">line 140</a>
     </li></ul></dd>
     
 
@@ -364,7 +441,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line105">line 105</a>
+        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line117">line 117</a>
     </li></ul></dd>
     
 
@@ -457,7 +534,7 @@ Disables ticker (which calls loop by default unless setup() has been replaced)</
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line92">line 92</a>
+        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line104">line 104</a>
     </li></ul></dd>
     
 
@@ -517,7 +594,8 @@ Disables ticker (which calls loop by default unless setup() has been replaced)</
 <li>loop function Gameloop functio for this game</li>
 <li>exit function Callback function when the game exits</li>
 <li>defaultSize Object The default size of this game in options.defaultSize.x and options.defaultSize.y</li>
-<li>pageScale int The amount to scale all images in this game (defaults to 1)</li>
+<li>pageScale int The amount to scale all images in this game (defaults to 1) (depcrecated: use percent sizing instead)</li>
+<li>extraAssets String[] Array of additional assets that are not autoloaded</li>
 </ul>
     </div>
     
@@ -603,7 +681,7 @@ Disables ticker (which calls loop by default unless setup() has been replaced)</
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line20">line 20</a>
+        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line28">line 28</a>
     </li></ul></dd>
     
 
@@ -696,7 +774,7 @@ Updates the screen and returns true to indicate success</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line80">line 80</a>
+        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line92">line 92</a>
     </li></ul></dd>
     
 
@@ -789,7 +867,7 @@ Sets ticket to run gameloop. This may be overridden by passing the setup option 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line69">line 69</a>
+        <a href="GameBase.js.html">GameBase.js</a>, <a href="GameBase.js.html#line81">line 81</a>
     </li></ul></dd>
     
 
@@ -832,13 +910,13 @@ Sets ticket to run gameloop. This may be overridden by passing the setup option 
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AdventureGame.Container.html">Container</a></li><li><a href="AdventureGame.Dialog.html">Dialog</a></li><li><a href="AdventureGame.Game.html">Game</a></li><li><a href="AdventureGame.GameBase.html">GameBase</a></li><li><a href="AdventureGame.Item.html">Item</a></li><li><a href="Room.html">Room</a></li></ul><h3>Namespaces</h3><ul><li><a href="AdventureGame.html">AdventureGame</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AdventureGame.Container.html">Container</a></li><li><a href="AdventureGame.Dialog.html">Dialog</a></li><li><a href="AdventureGame.Game.html">Game</a></li><li><a href="AdventureGame.GameBase.html">GameBase</a></li><li><a href="AdventureGame.Item.html">Item</a></li><li><a href="Room.html">Room</a></li></ul><h3>Namespaces</h3><ul><li><a href="AdventureGame.html">AdventureGame</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Sprite_initialize">Sprite_initialize</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Mon Nov 10 2014 13:02:46 GMT+0930 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Thu Nov 20 2014 15:55:23 GMT+0930 (CST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -39,8 +39,9 @@ this.AdventureGame = this.AdventureGame || {};
 	"use strict";
 	
 	var 
-		percentRegex = /(\d+\.?\d*)%/,
-		pixelRegex = /(\d+)px/;
+		negativeRegex = /\-\d*/,
+		percentRegex = /([0-9\.]+\.?\d*)%/,
+		pixelRegex = /([0-9\.]+)px/;
 
 	/**
 	* The stage used for this game
@@ -58,15 +59,18 @@ this.AdventureGame = this.AdventureGame || {};
 	AdventureGame.inputDisabled = false;
 
 	/**
-	* Game flags set for this game
-	*/
-	AdventureGame.flags = {};
-
-	/**
 	* The save document for this game
 	*/
-	AdventureGame.saveGame = {};
-
+	AdventureGame.saveGame = {
+						_id: 'game_unknown_'+Date.now(),
+						name: 'undefined',
+						points: 0,
+						inventory: [],
+						items: {},
+						flags: {},
+						character: {}
+	};
+	
 	/**
 	* PouchDB database connction
 	*/
@@ -89,7 +93,7 @@ this.AdventureGame = this.AdventureGame || {};
 	/**
 	* Scale image to fit in a box by either pixel or percent values 
 	* function getScaleToFit
-	* @param getScaleToFit string size of the (sqare) box to scale this image to fit. The size may be in pixels (end in 'px') or percentage (end in '%')
+	* @param boxSize string size of the (sqare) box to scale this image to fit. The size may be in pixels (end in 'px') or percentage (end in '%')
 	* @param object The object to be scaled (should implement createjs.DisplayObject prototype)
 	* @return double value indicating the new scale for the object (where 1 is the default size)
 	* @memberof AdventureGame
@@ -112,11 +116,11 @@ this.AdventureGame = this.AdventureGame || {};
 				throw "Unable to size item by percent as stage is not avilable";
 			}
 			canvas = AdventureGame.stage.canvas;
-			scaleX = (canvas.height * (parseInt(matchesPercent[1], 10) / 100) ) / bounds.height;
-			scaleY = (canvas.width * (parseInt(matchesPercent[1], 10) / 100) ) / bounds.width;
+			scaleX = (canvas.height * (parseFloat(matchesPercent[1]) / 100) ) / bounds.height;
+			scaleY = (canvas.width * (parseFloat(matchesPercent[1]) / 100) ) / bounds.width;
 		} else if (matchesPixels) {
-			scaleX = (parseInt(matchesPercent[1], 10) / bounds.width);
-			scaleY = (parseInt(matchesPercent[1], 10) / bounds.height);
+			scaleX = (parseFloat(matchesPercent[1]) / bounds.width);
+			scaleY = (parseFloat(matchesPercent[1]) / bounds.height);
 		} else {
 			throw "Invalid scale synatx";
 		}
@@ -135,6 +139,7 @@ this.AdventureGame = this.AdventureGame || {};
 		var
 			matchesPercent =  x.match(percentRegex),
 			matchesPixels = x.match(pixelRegex),
+			isNegative = x.match(negativeRegex),
 			canvas,
 			pxValue;
 		if (matchesPercent) {
@@ -147,6 +152,10 @@ this.AdventureGame = this.AdventureGame || {};
 			pxValue = matchesPercent[1];
 		} else {
 			throw "Invalid scale synatx";
+		}
+		// We this is a negative value we should probably make it one
+		if(isNegative) {
+			pxValue = pxValue * -1;
 		}
 		return pxValue;
 	};
@@ -163,6 +172,7 @@ this.AdventureGame = this.AdventureGame || {};
 		var
 			matchesPercent =  y.match(percentRegex),
 			matchesPixels = y.match(pixelRegex),
+			isNegative = y.match(negativeRegex),
 			canvas,
 			pxValue;
 		if (matchesPercent) {
@@ -176,31 +186,50 @@ this.AdventureGame = this.AdventureGame || {};
 		} else {
 			throw "Invalid scale synatx";
 		}
+		// We this is a negative value we should probably make it one
+		if(isNegative) {
+			pxValue = pxValue * -1;
+		}
 		return pxValue;
 	};
 	
 	/**
+	* Save the game file to the database (and hopefully synch to couchdb)
+	* @function saveGameToDB
+	* @return Save game document
+	* @memberof AdventureGame
+	*/
+	AdventureGame.saveGameToDB = function() {
+		var 
+			db = AdventureGame.db,
+			doc = AdventureGame.saveGame;
+		return db.get(doc._id).then(function (origDoc) {
+			doc._rev = origDoc._rev;
+			return db.put(doc);
+		}).catch(function (err) {
+			if (err.status === 409) {
+				return AdventureGame.saveGameToDB();
+			} else { // new doc
+				return db.put(doc);
+			}
+		});
+	};
+	
+	/**
 	* Set a game flag to the given value
-	* function setGameFlag
+	* @function setGameFlag
 	* @param key String flagname to set value for
 	* @param value Value to store for this flag
 	* @memberof AdventureGame
 	*/
 	AdventureGame.setGameFlag = function(key, value) {
 		var 
-			flags = AdventureGame.flags,
-			saveGame = AdventureGame.saveGame,
-			db = AdventureGame.db;
-		flags[key] = value;
-		saveGame.flags = flags;
-		db.put(saveGame, function(err, response) {
-			if(err) {
-				console.error("Error updating game flags");
-				console.log(err);
-				console.log(response);
-			}
-		});	
+			saveGame = AdventureGame.saveGame;
+		saveGame.flags[key] = value;
+		console.log(saveGame);
+		AdventureGame.saveGameToDB(saveGame);
 	};
+	
 	
 	/**
 	* Get the value for a given gameflag
@@ -213,6 +242,22 @@ this.AdventureGame = this.AdventureGame || {};
 		return AdventureGame.saveGame.flags[key];
 	};
 	
+	
+	/**
+	* Add points to the players game record and save
+	* @function addPoints
+	* @param points integer the number of points to add
+	* @memberof AdventureGame
+	*/
+	AdventureGame.addPoints = function(points) {
+		var 
+			saveGame = AdventureGame.saveGame;
+		saveGame.points = saveGame.points + points;
+		console.log(saveGame);
+		AdventureGame.saveGameToDB(saveGame);
+	};
+
+
 }());
 </code></pre>
         </article>
@@ -224,13 +269,13 @@ this.AdventureGame = this.AdventureGame || {};
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AdventureGame.Container.html">Container</a></li><li><a href="AdventureGame.Dialog.html">Dialog</a></li><li><a href="AdventureGame.Game.html">Game</a></li><li><a href="AdventureGame.GameBase.html">GameBase</a></li><li><a href="AdventureGame.Item.html">Item</a></li><li><a href="Room.html">Room</a></li></ul><h3>Namespaces</h3><ul><li><a href="AdventureGame.html">AdventureGame</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AdventureGame.Container.html">Container</a></li><li><a href="AdventureGame.Dialog.html">Dialog</a></li><li><a href="AdventureGame.Game.html">Game</a></li><li><a href="AdventureGame.GameBase.html">GameBase</a></li><li><a href="AdventureGame.Item.html">Item</a></li><li><a href="Room.html">Room</a></li></ul><h3>Namespaces</h3><ul><li><a href="AdventureGame.html">AdventureGame</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Sprite_initialize">Sprite_initialize</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Mon Nov 10 2014 13:02:46 GMT+0930 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Thu Nov 20 2014 15:55:23 GMT+0930 (CST)
 </footer>
 
 <script> prettyPrint(); </script>
