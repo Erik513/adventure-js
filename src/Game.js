@@ -71,11 +71,18 @@ this.AdventureGame = this.AdventureGame || {};
 	/**
 	 * Object containing configuration for items as key value pairs
 	 * @name itemList
-	 * @type Object[]
+	 * @type Object
 	 * @memberof AdventureGame.Game
 	 **/
 	p.itemList = {};
 
+	/**
+	 * Object containing all items loaded into the game identified by their id
+	 * @name items
+	 * @type Object
+	 * @memberof AdventureGame.Game
+	 **/
+	p.items = {};
 	
 	/**
 	 * Configuration options to create player character if a character object is not given
@@ -100,6 +107,14 @@ this.AdventureGame = this.AdventureGame || {};
 	 * @memberof AdventureGame.Game
 	 **/
 	p.overlayImages = [];
+	
+	/**
+	* Callback function after game has fully loaded
+	* @name loadedCallback
+	* @type function
+	* @memberof AdventureGame.game
+	**/
+	p.loadedCallback = null;
 	
 	/**
 	 * Initlization function of parent GameBase class
@@ -271,6 +286,7 @@ this.AdventureGame = this.AdventureGame || {};
 			player = new AdventureGame.Character(this.playerData);
 			AdventureGame.player = player;
 		}
+		
 		// Set player inventory to use the game inventory
 		var game = this;
 		AdventureGame.player.inventory.addItem = function(item) {
@@ -291,7 +307,9 @@ this.AdventureGame = this.AdventureGame || {};
 					AdventureGame.player.inventory.findItemWithId(item) === -1 &&
 					AdventureGame.saveGame.inventory.indexOf(item) < 0
 				) {
-					this.roomData.items[item] = new AdventureGame.Item(items[item]);
+					// This item both in the item placeholder and in the configuration to pass to the room later
+					this.items[item] = new AdventureGame.Item(items[item]);
+					this.roomData.items[item] = this.items[item];
 				}
 			}
 			
@@ -314,12 +332,14 @@ this.AdventureGame = this.AdventureGame || {};
 		this.currentRoom.load(AdventureGame.player, this.door);
 		
 		// Add overlay
+		this.gameOverlay = new createjs.Container();
 		for(overlayIndex = 0; overlayIndex < this.overlayImages.length; overlayIndex++) {
 			this.overlayImages[overlayIndex].img = new createjs.Bitmap(this.overlayImages[overlayIndex].src);
 			this.overlayImages[overlayIndex].img.scaleX = this.currentRoom.background.scaleX;
 			this.overlayImages[overlayIndex].img.scaleY = this.currentRoom.background.scaleY;
-			this.stage.addChild(this.overlayImages[overlayIndex].img);
+			this.gameOverlay.addChild(this.overlayImages[overlayIndex].img);
 		}
+		this.stage.addChild(this.gameOverlay);
 		
 		// Now draw score timer on top of the room
 		this.scoreText.scaleX = AdventureGame.getScaleToFit('10%',this.scoreText);
@@ -342,7 +362,11 @@ this.AdventureGame = this.AdventureGame || {};
 				if(itemIndex === -1) {
 					console.log("Adding "+AdventureGame.saveGame.inventory[item]+" to inventory");
 					if(this.itemList[AdventureGame.saveGame.inventory[item]]) {
-						AdventureGame.player.inventory.addItem(new AdventureGame.Item(this.itemList[AdventureGame.saveGame.inventory[item]]));
+						// Add items to the inventory using the container prototype so as to avoid redrawing the inventory as calls to tween don't stack well
+						AdventureGame.Container.prototype.addItem.call(
+							AdventureGame.player.inventory,
+							new AdventureGame.Item(this.itemList[AdventureGame.saveGame.inventory[item]])
+						);
 					} else {
 						console.error("ERROR: "+AdventureGame.saveGame.inventory[item]+" does not exist in item list");
 						console.log(this.itemList);
@@ -350,11 +374,29 @@ this.AdventureGame = this.AdventureGame || {};
 				}
 			}
 		}
+		this.showInventory();
 		this.stage.update();
 		
 		this.loaded = true;
 
 		this.tickerCallback = createjs.Ticker.addEventListener('tick', this.loop.bind(this));
+		
+		if(this.loadedCallback) {
+			this.loadedCallback();
+		}
+	};
+	
+	/**
+	* Get the index for the overlay on the stage.
+	* This can then be used with createjs.Stage.addChildAdd to add elements under the overlay
+	* @function getOverlayIndex
+	* @memberof AdventureGame.Game
+	* @return the stage index of the overlay
+	**/
+	p.getOverlayIndex = function() {
+		var index = AdventureGame.stage.children.indexOf(this.gameOverlay);
+		console.log(index);
+		return index;
 	};
 	
 	/**
@@ -363,12 +405,12 @@ this.AdventureGame = this.AdventureGame || {};
 	* @memberof AdventureGame.Game
 	* @return void
 	*/
-	p.loop = function() {
+	p.loop = function(evt) {
 		if(this.loaded && this.currentRoom) {
 			this.currentRoom.loop();
 		}
 		AdventureGame.player.step();
-		this.stage.update();
+		this.stage.update(evt);
 	};
 	
 	
@@ -411,9 +453,14 @@ this.AdventureGame = this.AdventureGame || {};
 		imageOffsetY = (boxWidthPx - item.getHeight()) / 2;
 		item.x = currentMarginL + imageOffsetX;
 		item.y = this.slotBoxes[itemIndex].y + imageOffsetY;
-		item.setDraggable(true);
 		stage.addChild(item);
-		
+		stage.update();
+
+		// Make this item draggable after a delay so this doesn't conflcit with the user's current action
+		setTimeout(function() {
+			item.setDraggable(true);
+		}, 200);
+
 		// Return new margin left
 		return currentMarginL + boxWidthPx + boxMarginPx ;
 	};
@@ -461,8 +508,10 @@ this.AdventureGame = this.AdventureGame || {};
 
 		// Move all existing boxes to the left
 		for(itemIndex = 0; itemIndex < this.slotBoxes.length; itemIndex++) {
+			this.slotBoxes[itemIndex].x = currentMarginL;
 			createjs.Tween.get(this.slotBoxes[itemIndex]).to({x:currentMarginL},100);
 			imageOffsetX = (boxWidthPx - item.getWidth()) / 2;
+//			AdventureGame.player.inventory.items[itemIndex].x = currentMarginL + imageOffsetX;
 			createjs.Tween.get(AdventureGame.player.inventory.items[itemIndex]).to({x:currentMarginL + imageOffsetX},100);
 			currentMarginL = currentMarginL + boxWidthPx + boxMarginPx ;
 		}
@@ -506,10 +555,26 @@ this.AdventureGame = this.AdventureGame || {};
 		}
 	};
 	
+	/**
+	* Add the indicated number of points to the players score and increment the counter
+	* @function addPoints
+	* @param points integer The number of points to add
+	* @memberof AdventureGame.Game
+	**/
 	p.addPoints = function(points) {
 		AdventureGame.addPoints(points);
 		this.addPointsToCounter(AdventureGame.saveGame.points, 100);
 	};
+	
+	p.populateContainerFromSave = function(container) {
+		var 
+			items = AdventureGame.saveGame.containers[container.id],
+			i;
+		for(i=0; i<items.length; i++) {
+			container.addItem(this.items[items[i]]);
+		}
+	};
+	
 	
 	AdventureGame.Game = Game;
 	
