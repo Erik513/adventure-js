@@ -22,84 +22,119 @@ this.AventureGame = this.AdventureGame || {};
 	
 	/**
 	 * Identification string for this character
-	 * @property id
+	 * @name id
 	 * @type String
+	 * @memberof AdventureGame.Character
 	 **/
 	p.id = null;
 
 	/**
 	 * Display name of the character
-	 * @property name
+	 * @name name
 	 * @type String
+	 * @memberof AdventureGame.Character
 	 **/
 	p.name = null;
 
 	/**
 	 * Profile picture of the character to show in dialogs
-	 * @property profile
+	 * @name profile
 	 * @type Image
+	 * @memberof AdventureGame.Character
 	 **/
 	p.profile = null;
 	
 	/**
 	 * Marker image for this charcter to show where they are walking (generally only used for player characters)
-	 * @property marker
+	 * @name marker
 	 * @type Image
+	 * @memberof AdventureGame.Character
 	 **/
 	p.marker = null;
 	
 	/**
 	 * Object containing x and y coordinates for location this character should walk to
-	 * @property nextPosition
+	 * @name nextPosition
 	 * @type Object
+	 * @memberof AdventureGame.Character
 	 **/
 	p.nextPosition = null;
 	
 	/**
 	 * Function to call when this character reaches their destination (as indicated in nextPosition)
-	 * @property destinationCallback
+	 * @name destinationCallback
 	 * @type Function
+	 * @memberof AdventureGame.Character
 	 **/
 	p.destinationCallback = null;
 	
 	/**
 	 * Distance in pixels for this character to move in a single step
-	 * @property moveDistance
+	 * @name moveDistance
 	 * @type integer
+	 * @memberof AdventureGame.Character
 	 **/
 	p.moveDistance = 5; // 
 
 	/**
 	 * Container object holding the inventory items for this character
-	 * @property inventory
+	 * @name inventory
 	 * @type Container
+	 * @memberof AdventureGame.Character
 	 **/
 	p.inventory = null;
 	
 	/**
 	 * The base height of the character image
-	 * @property baseHeight
+	 * @name baseHeight
 	 * @type int
+	 * @memberof AdventureGame.Character
 	 **/
 	p.baseHeight = null;
 
 	/**
 	 * The base width of the character image
-	 * @property baseWidth
+	 * @name baseWidth
 	 * @type int
+	 * @memberof AdventureGame.Character
 	 **/
 	p.baseWidth = null;
 	
 	/**
 	 * Flag to indicate if we are debugging the character
-	 * @property baseWidth
+	 * @name baseWidth
 	 * @type int
+	 * @memberof AdventureGame.Character
 	 **/
 	p.debug = false;
 	
 	/**
+	 * List of all animations for this character. Objects should reference their spritesheet animation and if they are flipped or not.
+	 * @name animationList
+	 * @type Object
+	 * @memberof AdventureGame.Character
+	 **/
+	p.animationList = {};
+	
+	/**
+	 * The "Base location" for this character. The x and y coordinate of the image that is treated as the character's standing location
+	 * @name baseWidth
+	 * @type Object
+	 * @memberof AdventureGame.Character
+	 **/
+	p.baseLocation = {x:0, y:0};
+	
+	/**
+	 * The radius for the character's base. This is how large of an area around the baseLocation should be excluded from overlapping other objects.
+	 * @name baseRadius
+	 * @type int
+	 * @memberof AdventureGame.Character
+	 **/
+	p.baseRadius = 0;
+	
+	/**
 	 * Constructor for parent Sprite object
-	 * @property Sprite_initialize
+	 * @name Sprite_initialize
 	 * @type function
 	 **/
 	p.Sprite_initialize = p.initialize;
@@ -110,6 +145,10 @@ this.AventureGame = this.AdventureGame || {};
 	 * @return void
 	 **/
 	p.initialize = function(options) {
+		var
+			spritesheet,
+			animationKey;
+		
 		if(this.debug) {
 			console.log(options);
 		}
@@ -143,11 +182,28 @@ this.AventureGame = this.AdventureGame || {};
 			this.baseHeight = img.height;
 			this.baseWidth = img.width;
 		}
-		var spritesheet = new createjs.SpriteSheet(options.spritesheet);
+		
+		// Create a spritesheet according to the given settings
+		spritesheet = new createjs.SpriteSheet(options.spritesheet);
+		createjs.SpriteSheetUtils.addFlippedFrames(spritesheet, true, false, false);
 		if(this.debug) {
 			console.log(spritesheet);
 		}
 		this.Sprite_initialize(spritesheet);
+		
+		// Now store all animations in an array so we can name flipped animations as well as standard ones
+		for(animationKey in options.spritesheet.animations) {
+			if(options.spritesheet.animations.hasOwnProperty(animationKey)) {
+				this.animationList[animationKey] = {animation: animationKey, flipped: false};
+			}
+		}
+		if(options.flippedAnimations) {
+			for(animationKey in options.flippedAnimations) {
+				if(options.flippedAnimations.hasOwnProperty(animationKey)) {
+					this.animationList[animationKey] = {animation: options.flippedAnimations[animationKey], flipped: true};
+				}
+			}
+		}
 		
 		this.x = options.x ? AdventureGame.getXCoord(options.x) : 0;
 		this.y = options.y ?  AdventureGame.getYCoord(options.y) : 0;
@@ -181,7 +237,7 @@ this.AventureGame = this.AdventureGame || {};
 		if(options.activate) {
 			this.activate = options.activate;
 		}
-		this.gotoAndPlay('idle');
+		this.setAnimation('idle');
 		
 	};
 	
@@ -223,7 +279,7 @@ this.AventureGame = this.AdventureGame || {};
 	 * @return The current width in pixes of the character
 	 **/
 	p.getWidth = function() {
-		return this.baseWidth * this.scaleX;
+		return this.baseWidth * (this.scaleX > 0 ? this.scaleX : - this.scaleX);
 	};
 	
 	/**
@@ -231,7 +287,13 @@ this.AventureGame = this.AdventureGame || {};
 	 * @return The number of pixes from the left of the screen where the character is standing
 	 */
 	p.getXLocation = function() {
-		return this.x + (this.getWidth() / 2);
+		var x;
+		if(this.scaleX > 0) {
+			x = this.x + (this.getWidth() / 2);
+		} else {
+			x = this.x - (this.getWidth() / 2);
+		}
+		return x;
 	};
 	
 	/**
@@ -249,12 +311,15 @@ this.AventureGame = this.AdventureGame || {};
 	 * @return void
 	 **/
 	p.setCharacterPosition = function(x,y) {
-		var bounds = this.getBounds();
 		if(x) {
-			this.x = x - (bounds.width / 2);
+			if(this.scaleX > 0) {
+				this.x = x - (this.getWidth() / 2);
+			} else {
+				this.x = x + (this.getWidth() / 2);
+			}
 		}
 		if(y) {
-			this.y = y - bounds.height;
+			this.y = y - this.getHeight();
 		}
 	};
 
@@ -308,40 +373,33 @@ this.AventureGame = this.AdventureGame || {};
 			
 			// Now set animation
 			if(direction.left) {
-				if(this.currentAnimation !== 'left') {
-					console.log("setting animation to left");
-					this.gotoAndPlay('left');
+				if(direction.up) {
+					this.setAnimation('upleft');
+				} else if(direction.down) {
+					this.setAnimation('downleft');
+				} else {
+					this.setAnimation('left');
 				}
 			} else if(direction.right) {
-				// Set idle animation if not already set
-				if(this.currentAnimation !== 'right') {
-					console.log("setting animation to right");
-					this.gotoAndPlay('right');
+				if(direction.up) {
+					this.setAnimation('upright');
+				} else if(direction.down) {
+					this.setAnimation('downright');
+				} else {
+					this.setAnimation('right');
 				}
 			} else if(direction.up) {
-				// Set idle animation if not already set
-				if(this.currentAnimation !== 'up') {
-					console.log("setting animation to up");
-					this.gotoAndPlay('up');
-				}
+				this.setAnimation('up');
 			} else if(direction.down) {
-				// Set idle animation if not already set
-				if(this.currentAnimation !== 'down') {
-					console.log("setting animation to down");
-					this.gotoAndPlay('down');
-				}
+				this.setAnimation('down');
 			} else {
-				// Set idle animation if not already set
-				if(this.currentAnimation !== 'idle') {
-					console.log("setting animation to idle");
-					this.gotoAndPlay('idle');
-				}
+				this.setAnimation('idle');
 			}
 			
 			// If we are at the destination
 			this.setCharacterPosition(characterPosition.x,characterPosition.y);
 			if(characterPosition.x === this.nextPosition.x && characterPosition.y === this.nextPosition.y) {
-				this.gotoAndPlay('idle');
+				this.setAnimation('idle');
 				console.log("At destination");
 				if(this.marker && AdventureGame.stage.hasChild(this.marker.obj)) {
 					AdventureGame.stage.removeChild(this.marker.obj);
@@ -354,6 +412,24 @@ this.AventureGame = this.AdventureGame || {};
 			}
 		} // End if nextPosition !== null
 	}; // End function
+	
+	
+	p.setAnimation = function(animation) {
+		var thisAnimation = this.animationList[animation];
+		console.log("Setting animation to "+animation);
+		if(this.currentAnimation !== thisAnimation.animation) {
+			this.gotoAndPlay(thisAnimation.animation);
+		}
+		// Flip if we need it
+		if((thisAnimation.flipped && this.scaleX > 0) || (!thisAnimation.flipped && this.scaleX < 0)) {
+			if(this.scaleX > 0) {
+				this.x = this.x + this.getWidth();
+			} else {
+				this.x = this.x - this.getWidth();
+			}
+			this.scaleX = - this.scaleX;
+		}
+	};
 	
 
 	AdventureGame.Character = Character;
