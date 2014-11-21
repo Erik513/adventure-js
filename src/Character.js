@@ -125,12 +125,13 @@ this.AventureGame = this.AdventureGame || {};
 	p.baseLocation = {x:0, y:0};
 	
 	/**
-	 * The radius for the character's base. This is how large of an area around the baseLocation should be excluded from overlapping other objects.
-	 * @name baseRadius
-	 * @type int
+	 * The dimensions for the character's base. This is how large of an area around the baseLocation should be excluded from overlapping other objects.
+	 * Height and width values properties should be set indicating area the character cannot overlay with objects around the baseLocation. Defaults to a point.
+	 * @name baseDimensions
+	 * @type Object
 	 * @memberof AdventureGame.Character
 	 **/
-	p.baseRadius = 0;
+	p.baseDimensions = {width: 0, height: 0};
 	
 	/**
 	 * Constructor for parent Sprite object
@@ -215,6 +216,19 @@ this.AventureGame = this.AdventureGame || {};
 			this.scaleX = scale;
 			this.scaleY = scale;
 		}
+		
+		// Set base location converting percentage values to pixels based on the character's current size
+		if(options.basePoint) {
+			this.baseLocation = {x: this.getWidth() * (options.basePoint.x / 100), y: this.getHeight() * (options.basePoint.y / 100)};
+		} else {
+			// Default to the bottom middle of the character
+			this.baseLocation = {x: this.getWidth() / 2, y: this.getHeight()};
+		}
+		// Set base shape converting percentage values to pixels based on the character's current size
+		if(options.baseDimensions) {
+			this.baseDimensions = {width: this.getWidth() * (options.baseDimensions.width / 100), height: this.getHeight() * (options.baseDimensions.height / 100)};
+		}
+		
 		this.profile = options.profile || null;
 		this.marker = options.marker || null;	// Marker to show for walking destination
 		this.nextPosition = null; // Next location to walk to
@@ -289,9 +303,9 @@ this.AventureGame = this.AdventureGame || {};
 	p.getXLocation = function() {
 		var x;
 		if(this.scaleX > 0) {
-			x = this.x + (this.getWidth() / 2);
+			x = this.x + this.baseLocation.x;
 		} else {
-			x = this.x - (this.getWidth() / 2);
+			x = this.x - this.baseLocation.x;
 		}
 		return x;
 	};
@@ -301,7 +315,7 @@ this.AventureGame = this.AdventureGame || {};
 	 * @return The number of pixes from the top of the screen where the character is standing
 	 */
 	p.getYLocation = function() {
-		return this.y + this.getHeight();
+		return this.y + this.baseLocation.y;
 	};
 
 	/**
@@ -313,13 +327,13 @@ this.AventureGame = this.AdventureGame || {};
 	p.setCharacterPosition = function(x,y) {
 		if(x) {
 			if(this.scaleX > 0) {
-				this.x = x - (this.getWidth() / 2);
+				this.x = x - this.baseLocation.x;
 			} else {
-				this.x = x + (this.getWidth() / 2);
+				this.x = x + this.baseLocation.x;
 			}
 		}
 		if(y) {
-			this.y = y - this.getHeight();
+			this.y = y - this.baseLocation.y;
 		}
 	};
 
