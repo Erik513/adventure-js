@@ -224,7 +224,8 @@ this.AdventureGame = this.AdventureGame || {};
 			item,
 			overlayIndex,
 			assetIndex,
-			character;
+			character,
+			$bar;
 			
 		// Load extra assets
 		for(assetIndex = 0; assetIndex > this.extraAssets.length; assetIndex++) {
@@ -260,11 +261,15 @@ this.AdventureGame = this.AdventureGame || {};
 			}
 		}		
 		queue.on('progress', function(evt) {
+			$bar = $('#loadingDiv .progress-bar');
+			$bar.width((evt.loaded*100)+'%');
+			$bar.text((evt.loaded*100)+ "%");
 			console.log('Loaded: '+evt.loaded+'%');
 		});
 		queue.on('fileload', this.assetLoaded.bind(this));
 		queue.on('complete', this.start.bind(this));			
 		queue.loadManifest(manifest);
+		$('#loadingDiv .progress-bar').show();
 	};
 	
 	/**
@@ -294,7 +299,7 @@ this.AdventureGame = this.AdventureGame || {};
 			game.addToInventory(item);
 		};
 
-
+		$('#loadingDiv .progress-bar').hide();
 		console.log(AdventureGame.player.inventory.items);
 		console.log(this.itemList);
 		// Load this room if not yet loaded
