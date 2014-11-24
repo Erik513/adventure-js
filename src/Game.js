@@ -269,7 +269,7 @@ this.AdventureGame = this.AdventureGame || {};
 		queue.on('fileload', this.assetLoaded.bind(this));
 		queue.on('complete', this.start.bind(this));			
 		queue.loadManifest(manifest);
-		$('#loadingDiv .progress-bar').show();
+		$('#loadingDiv').show();
 	};
 	
 	/**
@@ -299,7 +299,7 @@ this.AdventureGame = this.AdventureGame || {};
 			game.addToInventory(item);
 		};
 
-		$('#loadingDiv .progress-bar').hide();
+		$('#loadingDiv').hide();
 		console.log(AdventureGame.player.inventory.items);
 		console.log(this.itemList);
 		// Load this room if not yet loaded
