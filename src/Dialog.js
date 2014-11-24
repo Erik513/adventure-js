@@ -281,7 +281,9 @@ this.AdventureGame = this.AdventureGame || {};
 	*/
 	p.close = function(evt) {
 		AdventureGame.stage.removeChild(this.domElem);
-		document.body.removeChild(this.div);
+		if(this.div.parentNode !== null) {
+			document.body.removeChild(this.div);
+		}
 		if(this.onClose) {
 			this.onClose({
 				type: evt.type,
