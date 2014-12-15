@@ -182,6 +182,39 @@ this.AdventureGame = this.AdventureGame || {};
 				console.error("Unhandled file type: "+item.type);
 		}
 	};
+
+
+	/**
+	* Add points to the score counter displayed on the stage.
+	* This is a recursive function used to show the counter incrementing (or decrementing) the target score.
+	* It does not update the actual score. If this is desired AdventureGame.GameBase.addPoints should be used instead
+	* @function addPointsToCounter
+	* @param target integer The target score to increment or decrement counter to
+	* @param countInterval integer The amount of time to wait in miliseconds between each count step
+	* @memberof AdventureGame.Game
+	**/
+	p.addPointsToCounter = function(target,countInterval) {
+		var 
+			current = parseInt(this.scoreText.text, 10),
+			increment = target > current ? 1 : -1;
+		this.scoreText.text = current + increment;
+		if(current + increment !== target) {
+			setTimeout(function() {
+				this.addPointsToCounter(target, countInterval);
+			}.bind(this), countInterval);
+		}
+	};
+	
+	/**
+	* Add the indicated number of points to the players score and increment the counter
+	* @function addPoints
+	* @param points integer The number of points to add
+	* @memberof AdventureGame.Game
+	**/
+	p.addPoints = function(points) {
+		AdventureGame.addPoints(points);
+		this.addPointsToCounter(AdventureGame.saveGame.points, 100);
+	};
 	
 	AdventureGame.GameBase = GameBase;
 	
