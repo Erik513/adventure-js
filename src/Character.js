@@ -186,6 +186,10 @@ this.AventureGame = this.AdventureGame || {};
 		
 		// Create a spritesheet according to the given settings
 		spritesheet = new createjs.SpriteSheet(options.spritesheet);
+		// Oddly sometimes phonegap doesn't vuild the frames so do that now
+		if(!spritesheet._frames) {
+			spritesheet._calculateFrames();
+		}
 		createjs.SpriteSheetUtils.addFlippedFrames(spritesheet, true, false, false);
 		if(this.debug) {
 			console.log(spritesheet);
