@@ -117,7 +117,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* * div HTMLDom object to show instead of dialog
 	* * image URI Path to image to be shown in this dialog
 	* * question string Flag indicating if a form asking the player a question should be shown. Valid values are 'radio' and 'text'
-	* * answers Object[] Array of valid answers for this question. Each object should have a value and text set
+	* * answers Object[] Array of valid answers for this question. Each object should have a value and text set. Valid answers should have the correct property evalute to true
 	* * onClose function Callback function when dialog is closed
 	* * dialogClass String CSS class(es) to add to the top dialog container (default 'gameDialog')
 	* * top int Distance to show dialog from the top of screen in percent
