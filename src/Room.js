@@ -143,6 +143,31 @@ this.AdventureGame = this.AdventureGame || {};
 	};
 
 	/**
+	* Scale the background and floor to fit the stage size. This can fail if the image is improperly loaded as occurrs in phonegap
+	* @return Promise
+	* @memberof Room
+	**/
+	p.scaleBackground = function() {
+		var _this = this,
+			stage = AdventureGame.stage;
+		return new Promise(function(resolve, reject) {
+			if(!_this.background.image.width || !_this.background.image.height) {
+				reject(new Error("Background image loaded but dimensions not set!"));
+			} else {
+				// Scale and load background
+				_this.background.scaleX = stage.canvas.width / _this.background.image.width;
+				_this.background.scaleY = stage.canvas.height / _this.background.image.height;
+				console.log("Background scale: "+_this.background.scaleX+","+_this.background.scaleY);
+				// Make sure the floor scales with the background
+				_this.floor.scaleX = _this.background.scaleX;
+				_this.floor.scaleY = _this.background.scaleY;
+				_this.backgroundScaled = true;
+				resolve();
+			}
+		});
+	};
+
+	/**
 	* Load this room and draw on the stage
 	* @param player Character object representing the playable character
 	* @param door Object with x,y and direction information for player to enter from
@@ -151,79 +176,89 @@ this.AdventureGame = this.AdventureGame || {};
 	*/
 	p.load = function(player, door) {
 		console.log("Loading room");
-		var 
-			itemID,
-			characterID,
-			stage = AdventureGame.stage,
-			characterHeight = player.getHeight(),
-			characterWidth = player.getWidth(),
-			aCharacter,
-			doorCoord;
-		// Scale and load background
-		this.background.scaleX = stage.canvas.width / this.background.image.width;
-		this.background.scaleY = stage.canvas.height / this.background.image.height;
-		stage.addChild(this.background);
-		// Make sure the floor scales with the background
-		this.floor.scaleX = this.background.scaleX;
-		this.floor.scaleY = this.background.scaleY;
-		stage.addChild(this.floor);
-		this.floor.on('click', function(event) {
-			player.walkToPosition(event.stageX, event.stageY);
-			player.destinationCallback = null;
-		});
+		var _this = this;
+		return new Promise(function(resolve, reject) {
+			var 
+				itemID,
+				characterID,
+				stage = AdventureGame.stage,
+				characterHeight = player.getHeight(),
+				characterWidth = player.getWidth(),
+				aCharacter,
+				doorCoord;
+		
+			stage.addChild(_this.background);
+			stage.addChild(_this.floor);
+			_this.floor.on('click', function(event) {
+				player.walkToPosition(event.stageX, event.stageY);
+				player.destinationCallback = null;
+			});
 
-		for(itemID in this.items) {
-			if(this.items.hasOwnProperty(itemID)) {
-				this.items[itemID].room = this;
-				stage.addChild(this.items[itemID]);
+			for(itemID in _this.items) {
+				if(_this.items.hasOwnProperty(itemID)) {
+					_this.items[itemID].room = _this;
+					stage.addChild(_this.items[itemID]);
+				}
 			}
-		}
 
 
-		console.log(this.characters);
-		for(characterID in this.characters) {
-			if(this.characters.hasOwnProperty(characterID)) {
-				aCharacter = this.characters[characterID];
-				stage.addChild(aCharacter);
+			console.log(_this.characters);
+			for(characterID in _this.characters) {
+				if(_this.characters.hasOwnProperty(characterID)) {
+					aCharacter = _this.characters[characterID];
+					stage.addChild(aCharacter);
+				}
 			}
-		}
 	
-		// Add characters
-		// Add player first
-		if(door) {
-			// Convert door % value to px for the stage
-			doorCoord = AdventureGame.percentToStageCoord(door.x, door.y, AdventureGame.stage);
-			console.log(AdventureGame.stage.canvas.width+' * ('+door.x+'/100)');
-			switch(door.location) {
-				case 'N':
-					player.setCharacterPosition(doorCoord.x, doorCoord.y-5);
-					player.nextPosition = {x: doorCoord.x, y: doorCoord.y+characterHeight+5};
-					break;
-				case 'E':
-					player.setCharacterPosition(doorCoord.x-characterWidth+5, doorCoord.y);
-					player.nextPosition = {x: doorCoord.x+characterWidth+5, y: doorCoord.y};
-					break;
-				case 'S':
-					player.setCharacterPosition(doorCoord.x, doorCoord.y+characterHeight+5);
-					player.nextPosition = {x: doorCoord.x, y: doorCoord.y-5};
-					break;
-				case 'W':
-					player.setCharacterPosition(doorCoord.x-characterWidth-5, doorCoord.y);
-					player.nextPosition = {x: doorCoord.x+characterWidth+5, y: doorCoord.y};
-					break;
-				default:
-					player.setCharacterPosition(doorCoord.x, doorCoord.y);
+			// Add characters
+			// Add player first
+			if(door) {
+				// Convert door % value to px for the stage
+				doorCoord = AdventureGame.percentToStageCoord(door.x, door.y, AdventureGame.stage);
+				console.log(AdventureGame.stage.canvas.width+' * ('+door.x+'/100)');
+				switch(door.location) {
+					case 'N':
+						player.setCharacterPosition(doorCoord.x, doorCoord.y-5);
+						player.nextPosition = {x: doorCoord.x, y: doorCoord.y+characterHeight+5};
+						break;
+					case 'E':
+						player.setCharacterPosition(doorCoord.x-characterWidth+5, doorCoord.y);
+						player.nextPosition = {x: doorCoord.x+characterWidth+5, y: doorCoord.y};
+						break;
+					case 'S':
+						player.setCharacterPosition(doorCoord.x, doorCoord.y+characterHeight+5);
+						player.nextPosition = {x: doorCoord.x, y: doorCoord.y-5};
+						break;
+					case 'W':
+						player.setCharacterPosition(doorCoord.x-characterWidth-5, doorCoord.y);
+						player.nextPosition = {x: doorCoord.x+characterWidth+5, y: doorCoord.y};
+						break;
+					default:
+						player.setCharacterPosition(doorCoord.x, doorCoord.y);
+				}
+			} else {
+				// This is hardly necessecary now as the player is already standing here
+				player.setCharacterPosition(player.getXLocation(), player.getYLocation());
 			}
-		} else {
-			// This is hardly necessecary now as the player is already standing here
-			player.setCharacterPosition(player.getXLocation(), player.getYLocation());
-		}
-		stage.addChild(player);
+			stage.addChild(player);
 			
-		stage.update();
-		if(this.onLoad) {
-			this.onLoad();
-		}
+			stage.update();
+			if(_this.onLoad) {
+				_this.onLoad();
+			}
+			
+			resolve();
+		}).then(function() {
+			// Scale the background once the room is fully loaded
+			_this.scaleBackground(true).then(function() {
+				console.log("Worked?");
+			}, function() {
+				console.log("Retrying loading background image");
+				setTimeout(function() {
+					_this.scaleBackground(false);
+				}, 200);
+			});
+		});
 	};
 	
 	/**

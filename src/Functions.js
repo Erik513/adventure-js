@@ -80,7 +80,10 @@ this.AdventureGame = this.AdventureGame || {};
 			scaleY;
 		if(object.getBounds) {
 			bounds = object.getBounds();
-		} else {
+		}
+		// In case getBounds() fails (as seems to happen a bit in phonegap)
+		if(!bounds) {
+			console.error("Getbounds returned a null or undefined response. Setting width and height manually");
 			bounds = {width: object.width, height: object.height};
 		}
 		if (matchesPercent) {

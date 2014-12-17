@@ -280,6 +280,7 @@ this.AdventureGame = this.AdventureGame || {};
 	**/
 	p.start = function() {
 		var 
+			_this = this,
 			player = AdventureGame.player,
 			items,
 			item,
@@ -314,6 +315,7 @@ this.AdventureGame = this.AdventureGame || {};
 				) {
 					// This item both in the item placeholder and in the configuration to pass to the room later
 					this.items[item] = new AdventureGame.Item(items[item]);
+					console.log('Item scale '+items[item].scale+" set to "+this.items[item].scaleX);
 					this.roomData.items[item] = this.items[item];
 				}
 			}
@@ -334,26 +336,33 @@ this.AdventureGame = this.AdventureGame || {};
 		}
 		
 		this.scoreText = new createjs.Text(AdventureGame.saveGame.points.toString(), "30px 'Coming Soon'", "#FFFFFF");	// Create score counter before loading room in case initial event wants to use it
-		this.currentRoom.load(AdventureGame.player, this.door);
+		this.currentRoom.load(AdventureGame.player, this.door).then(function() {
+			console.log("Room loaded");
+			// Add overlay
+			_this.gameOverlay = new createjs.Container();
+			for(overlayIndex = 0; overlayIndex < _this.overlayImages.length; overlayIndex++) {
+				_this.overlayImages[overlayIndex].img = new createjs.Bitmap(_this.overlayImages[overlayIndex].src);
+				_this.gameOverlay.addChild(_this.overlayImages[overlayIndex].img);
+			}
+			console.log("Background scale: "+_this.currentRoom.background.scaleX);
+			_this.gameOverlay.scaleX = _this.currentRoom.background.scaleX;
+			_this.gameOverlay.scaleY = _this.currentRoom.background.scaleY;
+			_this.stage.addChild(_this.gameOverlay);
+			
+			// Now draw score timer on top of the room (this goes in the promise as it has to follow the overylay to be placed on top)
+			_this.scoreText.scaleX = AdventureGame.getScaleToFit('10%',_this.scoreText);
+			_this.scoreText.scaleY = _this.scoreText.scaleX;
+			_this.scoreText.x = AdventureGame.getXCoord('2%');
+			_this.scoreText.y = AdventureGame.getYCoord('1%');
+			console.log(_this.scoreText.text);
+			console.log(_this.scoreText);
+			_this.stage.addChild(_this.scoreText);
+			
+		}, function(err) {
+			console.error(err.message);
+		});
 		
-		// Add overlay
-		this.gameOverlay = new createjs.Container();
-		for(overlayIndex = 0; overlayIndex < this.overlayImages.length; overlayIndex++) {
-			this.overlayImages[overlayIndex].img = new createjs.Bitmap(this.overlayImages[overlayIndex].src);
-			this.overlayImages[overlayIndex].img.scaleX = this.currentRoom.background.scaleX;
-			this.overlayImages[overlayIndex].img.scaleY = this.currentRoom.background.scaleY;
-			this.gameOverlay.addChild(this.overlayImages[overlayIndex].img);
-		}
-		this.stage.addChild(this.gameOverlay);
 		
-		// Now draw score timer on top of the room
-		this.scoreText.scaleX = AdventureGame.getScaleToFit('10%',this.scoreText);
-		this.scoreText.scaleY = this.scoreText.scaleX;
-		this.scoreText.x = AdventureGame.getXCoord('2%');
-		this.scoreText.y = AdventureGame.getYCoord('1%');
-		console.log(this.scoreText.text);
-		console.log(this.scoreText);
-		this.stage.addChild(this.scoreText);
 		
 		
 		console.log(AdventureGame.player.inventory);
