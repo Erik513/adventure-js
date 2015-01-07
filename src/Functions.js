@@ -1,5 +1,5 @@
 /*jslint white: true, browser: true, plusplus: true, nomen: true */
-/*global console, createjs, $, AdventureGame */
+/*global console, Promise, createjs, $, AdventureGame */
 
 this.AdventureGame = this.AdventureGame || {};
 
@@ -62,6 +62,44 @@ this.AdventureGame = this.AdventureGame || {};
 		return {x: AdventureGame.stage.canvas.width * (x / 100), y: AdventureGame.stage.canvas.height * (y/100)};
 	};
 	
+	
+	/**
+	* Due to problems with phonegap some assets are reported as loaded but image dimensions are not yet available
+	* This promise waits until the image is loaded or the timeout is reached before reporting success or failure
+	* @param image The image to wait for width and height values for
+	* @param timeout The number of miliseconds to wait until treating this as a failed loading
+	* @return Promise
+	**/
+	AdventureGame.waitUntilLoaded = function(image, timeout) {
+		timeout = timeout || 500;
+		return new Promise(function(resolve, reject) {
+			var 
+				defaultSleepTime = 200,
+				waitRecurse;
+
+			// Recursive function to handle timeout callbacks. Created as a variable to ensure access to function variables and resolve() and reject()
+			waitRecurse = function(remaining) {
+				var sleepTime = remaining < defaultSleepTime ? remaining : defaultSleepTime;
+				if(image.width && image.height) {
+					resolve();
+				} else {
+					setTimeout(function() {
+						remaining = remaining - sleepTime;
+						if(timeout === 0) {
+							reject(new Error("Image failed to load in given time"));
+						} else {
+							waitRecurse(image, remaining);
+						}
+					}, sleepTime);
+				}
+			};
+			
+			waitRecurse(image, timeout);
+		});
+	};
+	
+	
+	
 	/**
 	* Scale image to fit in a box by either pixel or percent values 
 	* function getScaleToFit
@@ -84,7 +122,7 @@ this.AdventureGame = this.AdventureGame || {};
 		// In case getBounds() fails (as seems to happen a bit in phonegap)
 		if(!bounds) {
 			console.error("Getbounds returned a null or undefined response. Setting width and height manually");
-			bounds = {width: object.width, height: object.height};
+			bounds = {width: object.width || object.baseWidth , height: object.height || object.baseHeight};
 		}
 		if (matchesPercent) {
 			if(!AdventureGame.stage) {
