@@ -207,6 +207,9 @@ this.AdventureGame = this.AdventureGame || {};
 		});
 		queue.on('fileload', this.assetLoaded.bind(this));
 		queue.on('complete', this.start.bind(this));
+		queue.on('error', function(e) {
+			console.error(e.title+":"+e.message+" on "+e.data.src);
+		});
 		queue.loadManifest(manifest);
 		console.log("Loading items");
 	};
@@ -268,6 +271,9 @@ this.AdventureGame = this.AdventureGame || {};
 		});
 		queue.on('fileload', this.assetLoaded.bind(this));
 		queue.on('complete', this.start.bind(this));			
+		queue.on('error', function(e) {
+			console.error(e.title+":"+e.message+" on "+e.data.src);
+		});
 		queue.loadManifest(manifest);
 		$('#loadingDiv').show();
 	};
@@ -445,7 +451,8 @@ this.AdventureGame = this.AdventureGame || {};
 			item,
 			imageBoxsizePx,
 			imageOffsetX,
-			imageOffsetY;
+			imageOffsetY,
+			_this = this;
 		
 		// Draw inventory box;
 		this.slotBoxes[itemIndex] = new createjs.Shape();
@@ -462,13 +469,16 @@ this.AdventureGame = this.AdventureGame || {};
 		item = AdventureGame.player.inventory.items[itemIndex];
 		imageBoxsizePx = boxWidthPx * 0.8;	// Image is 80% of box size
 		console.log("Scaling box");
-		item.scale(imageBoxsizePx+"px");
-		imageOffsetX = (boxWidthPx - item.getWidth()) / 2;
-		imageOffsetY = (boxWidthPx - item.getHeight()) / 2;
-		item.x = currentMarginL + imageOffsetX;
-		item.y = this.slotBoxes[itemIndex].y + imageOffsetY;
-		stage.addChild(item);
-		stage.update();
+		item.scale(imageBoxsizePx+"px").then(function() {
+			imageOffsetX = (boxWidthPx - item.getWidth()) / 2;
+			imageOffsetY = (boxWidthPx - item.getHeight()) / 2;
+			item.x = currentMarginL + imageOffsetX;
+			item.y = _this.slotBoxes[itemIndex].y + imageOffsetY;
+			stage.addChild(item);
+			stage.update();
+		}).catch(function(e) {
+			console.error(e.message);
+		});
 
 		// Make this item draggable after a delay so this doesn't conflcit with the user's current action
 		setTimeout(function() {

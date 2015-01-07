@@ -133,7 +133,9 @@ this.AdventureGame = this.AdventureGame || {};
 		console.log("Scale: "+options.scale);
 		if (options.scale) {
 			this.initialScale = options.scale;
-			this.scale(options.scale);
+			this.scale(options.scale).catch(function(e) {
+				console.error(e.message);
+			});
 		}
 		if (options.x) {
 			this.setX(options.x);
@@ -294,66 +296,59 @@ this.AdventureGame = this.AdventureGame || {};
 	};
 	
 	/**
-	* Scale image to fit in a box by either pixel or percent values 
+	* Scale image to fit in a box by either pixel or percent values. 
+	* As phonegap has problems with the preloader this uses an asynchronous call to check it the image is loaded (and wait if not).
+	* If the image is definately loaded AdventureGame.getScaleToFit may be a better alternative as it is synchronous
 	* @function scale
 	* @param scale The size in pixels or percent to scale this Item to. This must be a string ending with 'px' or '%' indicating how to scale the Item
 	* @throws Error if the image has not been loaded fro this image, the stage has not yet been loaded or the input string is invalid
-	* @deprecated Use AdventureGame.getScaleToFit for a more versitile solution
+	* @returns Promise
 	* @memberof AdventureGame.Item
 	*/
-	p.scale = function(scale, noRetry) {
-		if(!this.image) {
-			console.log(this);
-			throw "Image is not yet loaded";
-		}
-		// If no scale is set default to initial scale
-		if(!scale) {
-			scale = this.initialScale;
-		}
-		// It would be nice to use AdventureGame.getBoxScale for this but it can't get the dimensions of the image (this.image.height and this.image.width)
-		console.log(this.id+": "+scale);
-		var
-			matchesPercent =  scale.match(/([0-9\.]+)%/),
-			matchesPixels = scale.match(/([0-9\.]+)px/),
-			canvas,
-			scaleX,
-			scaleY,
-			_this = this;
-		// Phonegap seems to have a race condition when loading images from easeljs. As this issue appears in easelJS it is difficult to address so just wait for them to load
-		if(!this.image.height || !this.image.width) {
-			console.error("Image loaded but dimensions not set!");
-			if(!noRetry) {
-				console.log("Retrying scale image");
-				setTimeout(function() {
-					_this.scale(scale, true);
-				}, 200);
+	p.scale = function(scale) {
+		var _this = this;
+		return new Promise(function(resolve, reject) {
+			// If no scale is set default to initial scale
+			if(!scale) {
+				scale = _this.initialScale;
 			}
-			console.log(this.image);
-		} else {
-			if (matchesPercent) {
-				console.log("Scale by percent");
-				if(!AdventureGame.stage) {
-					throw "Unable to size item by percent as stage is not available";
+			// It would be nice to use AdventureGame.getBoxScale for this but it can't get the dimensions of the image (this.image.height and this.image.width)
+			console.log(_this.id+": "+scale);
+			var
+				matchesPercent =  scale.match(/([0-9\.]+)%/),
+				matchesPixels = scale.match(/([0-9\.]+)px/),
+				canvas,
+				scaleX,
+				scaleY;
+				
+			AdventureGame.waitUntilLoaded(_this.image).then(function() {
+				if (matchesPercent) {
+					console.log("Scale by percent");
+					if(!AdventureGame.stage) {
+						reject("Unable to size item by percent as stage is not available");
+					} else {
+						canvas = AdventureGame.stage.canvas;
+						scaleX = (canvas.height * (matchesPercent[1] / 100) ) / _this.image.height;
+						scaleY = (canvas.width * (matchesPercent[1] / 100) ) / _this.image.width;
+						console.log(scaleX+","+scaleY);
+						_this.scaleX = scaleX < scaleY ? scaleX : scaleY;
+						_this.scaleY = _this.scaleX;
+						resolve();
+					}
+				} else if (matchesPixels) {
+					console.log("Pixels: "+matchesPixels[1]);
+					scaleX = (matchesPixels[1] / _this.image.width);
+					scaleY = (matchesPixels[1] / _this.image.height);
+					_this.scaleX = scaleX < scaleY ? scaleX : scaleY;
+					_this.scaleY = _this.scaleX;
+					resolve();
+				} else {
+					reject("Invalid scale synatx");
 				}
-				canvas = AdventureGame.stage.canvas;
-				scaleX = (canvas.height * (matchesPercent[1] / 100) ) / this.image.height;
-				scaleY = (canvas.width * (matchesPercent[1] / 100) ) / this.image.width;
-				console.log(scaleX+","+scaleY);
-				this.scaleX = scaleX < scaleY ? scaleX : scaleY;
-				this.scaleY = this.scaleX;
-			} else if (matchesPixels) {
-				console.log("Pixels: "+matchesPixels[1]);
-				scaleX = (matchesPixels[1] / this.image.width);
-				scaleY = (matchesPixels[1] / this.image.height);
-				this.scaleX = scaleX < scaleY ? scaleX : scaleY;
-				this.scaleY = this.scaleX;
-			} else {
-				throw "Invalid scale synatx";
-			}
-		}
-		
-//		this.scaleX = scale;
-//		this.scaleY = scale;
+			}, function() {
+				reject(new Error("Failed to load image for item "+_this.id));
+			});
+		});
 	};
 	
 	/**
