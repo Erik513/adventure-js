@@ -161,7 +161,6 @@ this.AventureGame = this.AdventureGame || {};
 			throw "No image source set";
 		}
 		
-		
 		this.id = options.id;
 		this.name = options.name;
 		this.src = options.src;
@@ -194,7 +193,8 @@ this.AventureGame = this.AdventureGame || {};
 		if(this.debug) {
 			console.log(spritesheet);
 		}
-		this.Sprite_initialize(spritesheet);
+		createjs.Sprite.call(this, spritesheet);
+//		this.Sprite_initialize(spritesheet);
 		
 		// Now store all animations in an array so we can name flipped animations as well as standard ones
 		for(animationKey in options.spritesheet.animations) {
@@ -212,6 +212,7 @@ this.AventureGame = this.AdventureGame || {};
 		
 		this.x = options.x ? AdventureGame.getXCoord(options.x) : 0;
 		this.y = options.y ?  AdventureGame.getYCoord(options.y) : 0;
+		
 		if(options.scale) {
 			var scale = AdventureGame.getScaleToFit(options.scale, this);
 			if(this.debug) {
@@ -232,7 +233,7 @@ this.AventureGame = this.AdventureGame || {};
 		if(options.baseDimensions) {
 			this.baseDimensions = {width: this.getWidth() * (options.baseDimensions.width / 100), height: this.getHeight() * (options.baseDimensions.height / 100)};
 		}
-		
+
 		this.profile = options.profile || null;
 		this.marker = options.marker || null;	// Marker to show for walking destination
 		this.nextPosition = null; // Next location to walk to
@@ -258,6 +259,7 @@ this.AventureGame = this.AdventureGame || {};
 		this.setAnimation('idle');
 		
 	};
+	
 	
 	/**
 	 * Function to bind to click event for this character
@@ -289,7 +291,11 @@ this.AventureGame = this.AdventureGame || {};
 	 * @return The current height in pixes of the character
 	 **/
 	p.getHeight = function(){
-		return this.baseHeight * this.scaleY;
+		var height = this.baseHeight;
+		if(!this.scaleY) {
+			height = this.baseHeight * this.scaleY;
+		}
+		return height;
 	};
 
 	/**
@@ -297,7 +303,11 @@ this.AventureGame = this.AdventureGame || {};
 	 * @return The current width in pixes of the character
 	 **/
 	p.getWidth = function() {
-		return this.baseWidth * (this.scaleX > 0 ? this.scaleX : - this.scaleX);
+		var width = this.baseWidth;
+		if(this.scaleX) {
+			width = this.baseWidth * (this.scaleX > 0 ? this.scaleX : - this.scaleX);
+		}
+		return width;
 	};
 	
 	/**
@@ -414,8 +424,9 @@ this.AventureGame = this.AdventureGame || {};
 				this.setAnimation('idle');
 			}
 			
-			// If we are at the destination
 			this.setCharacterPosition(characterPosition.x,characterPosition.y);
+			
+			// If we are at the destination
 			if(characterPosition.x === this.nextPosition.x && characterPosition.y === this.nextPosition.y) {
 				this.setAnimation('idle');
 				console.log("At destination");
