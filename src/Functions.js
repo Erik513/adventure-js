@@ -71,6 +71,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* @return Promise
 	**/
 	AdventureGame.waitUntilLoaded = function(image, timeout) {
+		console.log("Loading image "+image.src);
 		timeout = timeout || 500;
 		return new Promise(function(resolve, reject) {
 			var 
@@ -85,16 +86,17 @@ this.AdventureGame = this.AdventureGame || {};
 				} else {
 					setTimeout(function() {
 						remaining = remaining - sleepTime;
-						if(timeout === 0) {
-							reject(new Error("Image failed to load in given time"));
+						console.log("Waiting "+remaining+" for "+image.src+" to load");
+						if(remaining === 0) {
+							reject(new Error("Image "+image.src+" failed to load in given time"));
 						} else {
-							waitRecurse(image, remaining);
+							waitRecurse(remaining);
 						}
 					}, sleepTime);
 				}
 			};
 			
-			waitRecurse(image, timeout);
+			waitRecurse(timeout);
 		});
 	};
 	
