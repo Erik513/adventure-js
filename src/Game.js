@@ -351,10 +351,21 @@ this.AdventureGame = this.AdventureGame || {};
 			_this.scoreText = new createjs.Text(AdventureGame.saveGame.points.toString(), "30px 'Coming Soon'", "#FFFFFF");	// Create score counter before loading room in case initial event wants to use it
 			_this.currentRoom.load(AdventureGame.player, _this.door).then(function() {
 				console.log("Room loaded");
+				
+				var overlayPromises = [];
+				
+				for(overlayIndex=0; overlayIndex < _this.overlayImages.length; overlayIndex++) {
+					tmpImage = new Image();
+					tmpImage.src = _this.overlayImages[overlayIndex].src;
+					overlayPromises.push(AdventureGame.waitUntilLoaded(tmpImage));
+				}
+				return Promise.all(overlayPromises);
+			}).then(function() {
 				// Add overlay
 				_this.gameOverlay = new createjs.Container();
 				for(overlayIndex = 0; overlayIndex < _this.overlayImages.length; overlayIndex++) {
 					_this.overlayImages[overlayIndex].img = new createjs.Bitmap(_this.overlayImages[overlayIndex].src);
+					console.log(_this.overlayImages[overlayIndex].img.scaleX);
 					_this.gameOverlay.addChild(_this.overlayImages[overlayIndex].img);
 				}
 				console.log("Background scale: "+_this.currentRoom.background.scaleX);
@@ -371,8 +382,8 @@ this.AdventureGame = this.AdventureGame || {};
 				console.log(_this.scoreText);
 				_this.stage.addChild(_this.scoreText);
 			
-			}, function(e) {
-				console.error(e.stack || e.message || e);
+			}).catch(function(e) {
+				console.error(e.message+": "+e.stack);
 			});
 		
 		
