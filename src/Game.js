@@ -289,121 +289,132 @@ this.AdventureGame = this.AdventureGame || {};
 			_this = this,
 			player = AdventureGame.player,
 			items,
-			item,
 			characters,
-			charID,
+			tmpImage,
 			overlayIndex;
-		// Load player if not yet loaded
-		if(!player) {
-			player = new AdventureGame.Character(this.playerData);
-			AdventureGame.player = player;
-		}
 		
-		// Set player inventory to use the game inventory
-		var game = this;
-		AdventureGame.player.inventory.addItem = function(item) {
-			AdventureGame.Container.prototype.addItem.call(this,item);
-			game.addToInventory(item);
-		};
+		// Phonegap really struggles loading the large spritesheet so check it is loaded before continuing
+		tmpImage = new Image();
+		tmpImage.src = this.playerData.src;
+		AdventureGame.waitUntilLoaded(tmpImage, 2000).then(function() {
+			var 
+				item,
+				charID;
+			// Load player if not yet loaded
+			if(!player) {
+				player = new AdventureGame.Character(_this.playerData);
+				AdventureGame.player = player;
+			}
+		
+			// Set player inventory to use the game inventory
+			var game = _this;
+			AdventureGame.player.inventory.addItem = function(_this) {
+				AdventureGame.Container.prototype.addItem.call(_this,item);
+				game.addToInventory(item);
+			};
 
-		$('#loadingDiv').hide();
-		console.log(AdventureGame.player.inventory.items);
-		console.log(this.itemList);
-		// Load this room if not yet loaded
-		if(this.roomData) {
-			items = this.roomData.items;
-			this.roomData.items = [];
+			$('#loadingDiv').hide();
+			console.log(AdventureGame.player.inventory.items);
+			console.log(_this.itemList);
+			// Load this room if not yet loaded
+			if(_this.roomData) {
+				items = _this.roomData.items;
+				_this.roomData.items = [];
+				console.log(AdventureGame.saveGame.inventory);
+				for(item in items) {
+					if(items.hasOwnProperty(item) && 
+						AdventureGame.player.inventory.findItemWithId(item) === -1 &&
+						AdventureGame.saveGame.inventory.indexOf(item) < 0
+					) {
+						// This item both in the item placeholder and in the configuration to pass to the room later
+						_this.items[item] = new AdventureGame.Item(items[item]);
+						console.log('Item scale '+items[item].scale+" set to "+_this.items[item].scaleX);
+						_this.roomData.items[item] = _this.items[item];
+					}
+				}
+			
+				characters = _this.roomData.characters;
+				for(charID in characters) {
+					if(characters.hasOwnProperty(charID)) {
+						_this.roomData.characters[charID] = new AdventureGame.Character(characters[charID]);
+					}
+				}
+				_this.currentRoom = new AdventureGame.Room(_this.roomData);
+				_this.door = _this.roomData.entrance;
+				_this.roomData = null;	// Remove this as we now have an actual room
+			}
+			console.log("Fully loaded!");
+			if(!player.hasEventListener('click')) {
+				player.addEventListener('click', player.onClick.bind('player'));
+			}
+		
+			_this.scoreText = new createjs.Text(AdventureGame.saveGame.points.toString(), "30px 'Coming Soon'", "#FFFFFF");	// Create score counter before loading room in case initial event wants to use it
+			_this.currentRoom.load(AdventureGame.player, _this.door).then(function() {
+				console.log("Room loaded");
+				// Add overlay
+				_this.gameOverlay = new createjs.Container();
+				for(overlayIndex = 0; overlayIndex < _this.overlayImages.length; overlayIndex++) {
+					_this.overlayImages[overlayIndex].img = new createjs.Bitmap(_this.overlayImages[overlayIndex].src);
+					_this.gameOverlay.addChild(_this.overlayImages[overlayIndex].img);
+				}
+				console.log("Background scale: "+_this.currentRoom.background.scaleX);
+				_this.gameOverlay.scaleX = _this.currentRoom.background.scaleX;
+				_this.gameOverlay.scaleY = _this.currentRoom.background.scaleY;
+				_this.stage.addChild(_this.gameOverlay);
+			
+				// Now draw score timer on top of the room (this goes in the promise as it has to follow the overylay to be placed on top)
+				_this.scoreText.scaleX = AdventureGame.getScaleToFit('10%',_this.scoreText);
+				_this.scoreText.scaleY = _this.scoreText.scaleX;
+				_this.scoreText.x = AdventureGame.getXCoord('2%');
+				_this.scoreText.y = AdventureGame.getYCoord('1%');
+				console.log(_this.scoreText.text);
+				console.log(_this.scoreText);
+				_this.stage.addChild(_this.scoreText);
+			
+			}, function(e) {
+				console.error(e.stack || e.message || e);
+			});
+		
+		
+		
+		
+			console.log(AdventureGame.player.inventory);
 			console.log(AdventureGame.saveGame.inventory);
-			for(item in items) {
-				if(items.hasOwnProperty(item) && 
-					AdventureGame.player.inventory.findItemWithId(item) === -1 &&
-					AdventureGame.saveGame.inventory.indexOf(item) < 0
-				) {
-					// This item both in the item placeholder and in the configuration to pass to the room later
-					this.items[item] = new AdventureGame.Item(items[item]);
-					console.log('Item scale '+items[item].scale+" set to "+this.items[item].scaleX);
-					this.roomData.items[item] = this.items[item];
-				}
-			}
-			
-			characters = this.roomData.characters;
-			for(charID in characters) {
-				if(characters.hasOwnProperty(charID)) {
-					this.roomData.characters[charID] = new AdventureGame.Character(characters[charID]);
-				}
-			}
-			this.currentRoom = new AdventureGame.Room(this.roomData);
-			this.door = this.roomData.entrance;
-			this.roomData = null;	// Remove this as we now have an actual room
-		}
-		console.log("Fully loaded!");
-		if(!player.hasEventListener('click')) {
-			player.addEventListener('click', player.onClick.bind('player'));
-		}
-		
-		this.scoreText = new createjs.Text(AdventureGame.saveGame.points.toString(), "30px 'Coming Soon'", "#FFFFFF");	// Create score counter before loading room in case initial event wants to use it
-		this.currentRoom.load(AdventureGame.player, this.door).then(function() {
-			console.log("Room loaded");
-			// Add overlay
-			_this.gameOverlay = new createjs.Container();
-			for(overlayIndex = 0; overlayIndex < _this.overlayImages.length; overlayIndex++) {
-				_this.overlayImages[overlayIndex].img = new createjs.Bitmap(_this.overlayImages[overlayIndex].src);
-				_this.gameOverlay.addChild(_this.overlayImages[overlayIndex].img);
-			}
-			console.log("Background scale: "+_this.currentRoom.background.scaleX);
-			_this.gameOverlay.scaleX = _this.currentRoom.background.scaleX;
-			_this.gameOverlay.scaleY = _this.currentRoom.background.scaleY;
-			_this.stage.addChild(_this.gameOverlay);
-			
-			// Now draw score timer on top of the room (this goes in the promise as it has to follow the overylay to be placed on top)
-			_this.scoreText.scaleX = AdventureGame.getScaleToFit('10%',_this.scoreText);
-			_this.scoreText.scaleY = _this.scoreText.scaleX;
-			_this.scoreText.x = AdventureGame.getXCoord('2%');
-			_this.scoreText.y = AdventureGame.getYCoord('1%');
-			console.log(_this.scoreText.text);
-			console.log(_this.scoreText);
-			_this.stage.addChild(_this.scoreText);
-			
-		}, function(err) {
-			console.error(err.message);
-		});
-		
-		
-		
-		
-		console.log(AdventureGame.player.inventory);
-		console.log(AdventureGame.saveGame.inventory);
-		this.showInventory();
-				// Now the room is loaded add inventory items from save
-		for(item in AdventureGame.saveGame.inventory) {
-			// Only add items if they are not already in the inventory (when loading from an object the inventory will already be populated)
-			if(AdventureGame.saveGame.inventory.hasOwnProperty(item)) {
-				var itemIndex = AdventureGame.player.inventory.findItemWithId(AdventureGame.saveGame.inventory[item]);
-				if(itemIndex === -1) {
-					console.log("Adding "+AdventureGame.saveGame.inventory[item]+" to inventory");
-					if(this.itemList[AdventureGame.saveGame.inventory[item]]) {
-						// Add items to the inventory using the container prototype so as to avoid redrawing the inventory as calls to tween don't stack well
-						AdventureGame.Container.prototype.addItem.call(
-							AdventureGame.player.inventory,
-							new AdventureGame.Item(this.itemList[AdventureGame.saveGame.inventory[item]])
-						);
-					} else {
-						console.error("ERROR: "+AdventureGame.saveGame.inventory[item]+" does not exist in item list");
-						console.log(this.itemList);
+			_this.showInventory();
+					// Now the room is loaded add inventory items from save
+			for(item in AdventureGame.saveGame.inventory) {
+				// Only add items if they are not already in the inventory (when loading from an object the inventory will already be populated)
+				if(AdventureGame.saveGame.inventory.hasOwnProperty(item)) {
+					var itemIndex = AdventureGame.player.inventory.findItemWithId(AdventureGame.saveGame.inventory[item]);
+					if(itemIndex === -1) {
+						console.log("Adding "+AdventureGame.saveGame.inventory[item]+" to inventory");
+						if(_this.itemList[AdventureGame.saveGame.inventory[item]]) {
+							// Add items to the inventory using the container prototype so as to avoid redrawing the inventory as calls to tween don't stack well
+							AdventureGame.Container.prototype.addItem.call(
+								AdventureGame.player.inventory,
+								new AdventureGame.Item(_this.itemList[AdventureGame.saveGame.inventory[item]])
+							);
+						} else {
+							console.error("ERROR: "+AdventureGame.saveGame.inventory[item]+" does not exist in item list");
+							console.log(_this.itemList);
+						}
 					}
 				}
 			}
-		}
-		this.showInventory();
-		this.stage.update();
+			_this.showInventory();
+			_this.stage.update();
 		
-		this.loaded = true;
+			_this.loaded = true;
 
-		this.tickerCallback = createjs.Ticker.addEventListener('tick', this.loop.bind(this));
+			_this.tickerCallback = createjs.Ticker.addEventListener('tick', _this.loop.bind(_this));
 		
-		if(this.loadedCallback) {
-			this.loadedCallback();
-		}
+			if(_this.loadedCallback) {
+				_this.loadedCallback();
+			}
+		}).catch(function(e) {
+			console.error(e.message);
+			console.error(e.stack || e.message || e);
+		});
 	};
 	
 	/**
