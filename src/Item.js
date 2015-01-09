@@ -201,7 +201,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* @returns True if this activation was successful or false if it failed and associated actions should be reverted
 	*/
 	p.activate = function(item) {
-		var itemDialog,
+		var 
 			returnVal = false,
 			player = AdventureGame.player;
 		if(this.container) {
@@ -213,11 +213,14 @@ this.AdventureGame = this.AdventureGame || {};
 		} else if(item) {
 			returnVal = false;
 		} else {
-			itemDialog = new AdventureGame.Dialog({
+			if(AdventureGame.itemDialog) {
+				AdventureGame.itemDialog.close({type: 'auto'});
+			}
+			AdventureGame.itemDialog = new AdventureGame.Dialog({
 				image: this.image.src,
 				text: '<h3>'+this.name+'</h3><p>'+this.description+"</p>"
 			});
-			itemDialog.show();
+			AdventureGame.itemDialog.show();
 			if(this.collectable && player && this.parentContainer !== player.inventory) {
 				player.inventory.addItem(this);
 			}
