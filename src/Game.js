@@ -305,11 +305,11 @@ this.AdventureGame = this.AdventureGame || {};
 				player = new AdventureGame.Character(_this.playerData);
 				AdventureGame.player = player;
 			}
-		
+
 			// Set player inventory to use the game inventory
 			var game = _this;
-			AdventureGame.player.inventory.addItem = function(_this) {
-				AdventureGame.Container.prototype.addItem.call(_this,item);
+			AdventureGame.player.inventory.addItem = function(item) {
+				AdventureGame.Container.prototype.addItem.call(AdventureGame.player.inventory,item);
 				game.addToInventory(item);
 			};
 
