@@ -193,14 +193,15 @@ this.AdventureGame = this.AdventureGame || {};
 	* @param countInterval integer The amount of time to wait in miliseconds between each count step
 	* @memberof AdventureGame.Game
 	**/
-	p.addPointsToCounter = function(target,countInterval) {
+	p.updateCounter = function(countInterval) {
 		var 
+			target = AdventureGame.saveGame.points,
 			current = parseInt(this.scoreText.text, 10),
 			increment = target > current ? 1 : -1;
 		this.scoreText.text = current + increment;
 		if(current + increment !== target) {
 			setTimeout(function() {
-				this.addPointsToCounter(target, countInterval);
+				this.updateCounter(countInterval);
 			}.bind(this), countInterval);
 		}
 	};
@@ -213,7 +214,7 @@ this.AdventureGame = this.AdventureGame || {};
 	**/
 	p.addPoints = function(points) {
 		AdventureGame.addPoints(points);
-		this.addPointsToCounter(AdventureGame.saveGame.points, 100);
+		this.updateCounter(100);
 	};
 	
 	AdventureGame.GameBase = GameBase;
