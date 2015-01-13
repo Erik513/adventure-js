@@ -154,15 +154,14 @@ this.AventureGame = this.AdventureGame || {};
 			console.log(options);
 		}
 		if(!options.id) {
-			throw "No ID set for character";
+			throw new Error("No ID set for character");
 		} else if(!options.name) {
-			throw "No name set for character";
+			throw new Error("No name set for character");
 		} else if(!options.src) {
-			throw "No image source set";
+			throw new Error("No image source set");
 		}
 		
 		this.id = options.id;
-		this.name = options.name;
 		this.src = options.src;
 		
 		if(options.spritesheet) {
@@ -258,6 +257,8 @@ this.AventureGame = this.AdventureGame || {};
 		}
 		this.setAnimation('idle');
 		
+		// Finally set character name
+		this.name = options.name;
 	};
 	
 	
