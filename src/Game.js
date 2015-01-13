@@ -550,15 +550,18 @@ this.AdventureGame = this.AdventureGame || {};
 			marginLR = (stage.canvas.width - totalWidth) / 2,
 			currentMarginL = marginLR,
 			itemIndex = 0,
+			currentItem,
 			imageOffsetX;
 
 		// Move all existing boxes to the left
 		for(itemIndex = 0; itemIndex < this.slotBoxes.length; itemIndex++) {
+			currentItem = AdventureGame.player.inventory.items[itemIndex];
+			
 			this.slotBoxes[itemIndex].x = currentMarginL;
 			createjs.Tween.get(this.slotBoxes[itemIndex]).to({x:currentMarginL},100);
-			imageOffsetX = (boxWidthPx - item.getWidth()) / 2;
+			imageOffsetX = (boxWidthPx - currentItem.getWidth()) / 2;
 //			AdventureGame.player.inventory.items[itemIndex].x = currentMarginL + imageOffsetX;
-			createjs.Tween.get(AdventureGame.player.inventory.items[itemIndex]).to({x:currentMarginL + imageOffsetX},100);
+			createjs.Tween.get(currentItem).to({x:currentMarginL + imageOffsetX},100);
 			currentMarginL = currentMarginL + boxWidthPx + boxMarginPx ;
 		}
 		// Add new box
@@ -569,13 +572,7 @@ this.AdventureGame = this.AdventureGame || {};
 		if(AdventureGame.saveGame.inventory.indexOf(item.id) < 0) {
 			AdventureGame.saveGame.inventory.push(item.id);
 			if(AdventureGame.db) {
-				AdventureGame.db.put(AdventureGame.saveGame, function(err, doc) {
-					if(err) {
-						console.error("Error saving game after adding item to inventory");
-						console.log(err);
-						console.log(doc);
-					}
-				});
+				AdventureGame.saveGameToDB();
 			}
 		}
 	};
