@@ -377,8 +377,8 @@ this.AventureGame = this.AdventureGame || {};
 	p.step = function() {
 		if(this.nextPosition !== null) {
 			var characterPosition = {x:this.getXLocation(), y:this.getYLocation()},
-				distanceX = characterPosition.x - this.nextPosition.x,
-				distanceY = characterPosition.y - this.nextPosition.y,
+				distanceX = Math.floor(characterPosition.x - this.nextPosition.x),
+				distanceY = Math.floor(characterPosition.y - this.nextPosition.y),
 				direction = {left: 0, right: 0, up: 0, down: 0};
 			
 			if(distanceX > 0) {
@@ -428,7 +428,7 @@ this.AventureGame = this.AdventureGame || {};
 			this.setCharacterPosition(characterPosition.x,characterPosition.y);
 			
 			// If we are at the destination
-			if(characterPosition.x === this.nextPosition.x && characterPosition.y === this.nextPosition.y) {
+			if(Math.floor(characterPosition.x - this.nextPosition.x) === 0 && Math.floor(characterPosition.y - this.nextPosition.y) === 0) {
 				this.setAnimation('idle');
 				console.log("At destination");
 				if(this.marker && AdventureGame.stage.hasChild(this.marker.obj)) {
