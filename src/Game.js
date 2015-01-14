@@ -266,7 +266,7 @@ this.AdventureGame = this.AdventureGame || {};
 		queue.on('progress', function(evt) {
 			$bar = $('#loadingDiv .progress-bar');
 			$bar.width((evt.loaded*100)+'%');
-			$bar.text((evt.loaded*100)+ "%");
+			$bar.text(Math.floor(evt.loaded*100)+ "%");
 			console.log('Loaded: '+evt.loaded+'%');
 		});
 		queue.on('fileload', this.assetLoaded.bind(this));
