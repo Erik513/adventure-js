@@ -168,6 +168,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* @return void
 	*/
 	p.loadRoom = function(room, door) {	
+		console.profile("Load room");
 		AdventureGame.loadedGame = this;
 		this.door = door || null;
 		if(room instanceof AdventureGame.Room) {
@@ -199,10 +200,19 @@ this.AdventureGame = this.AdventureGame || {};
 		
 		this.currentRoom = room;
 		room.stage = this.stage;
-		this.assets.images.roomBG = {id:'roomBG'};
-		manifest.push({src:room.background.image.src, id:'roomBG'});
+		
+		// If we don't already have a background image load it
+		if(!this.assets.images.roomBG instanceof createjs.Bitmap) {
+			this.assets.images.roomBG = {src:room.background.image.src, id:'roomBG'};
+			manifest.push(this.assets.images.roomBG);
+		}
 		
 		queue.on('progress', function(evt) {
+			var $bar;
+			$('#loadingDiv').show();
+			$bar = $('#loadingDiv .progress-bar');
+			$bar.width((evt.loaded*100)+'%');
+			$bar.text(Math.floor(evt.loaded*100)+ "%");
 			console.log('Loaded: '+evt.loaded+'%');
 		});
 		queue.on('fileload', this.assetLoaded.bind(this));
@@ -210,7 +220,12 @@ this.AdventureGame = this.AdventureGame || {};
 		queue.on('error', function(e) {
 			console.error(e.title+":"+e.message+" on "+e.data.src);
 		});
-		queue.loadManifest(manifest);
+		// If there is anything left to load in the manifest load it, otherwise just star the game
+		if(manifest.length > 0) {
+			queue.loadManifest(manifest);
+		} else {
+			this.start();
+		}
 		console.log("Loading items");
 	};
 	
@@ -229,7 +244,7 @@ this.AdventureGame = this.AdventureGame || {};
 			assetIndex,
 			character,
 			$bar;
-			
+		
 		// Load extra assets
 		for(assetIndex = 0; assetIndex > this.extraAssets.length; assetIndex++) {
 			manifest.push({src: this.extraAssets[assetIndex], id: 'extraAsset'+assetIndex});
@@ -242,6 +257,9 @@ this.AdventureGame = this.AdventureGame || {};
 			this.assets.images['overlay'+overlayIndex] = this.overlayImages[overlayIndex];
 		}
 						
+//		this.roomData = JSON.parse(JSON.stringify(array));	// Clone roomdata as the item object get turned into an array to be given to the room constructor
+//		this.roomData.floor = array.floor;
+//		this.roomData.onLoad = array.onLoad;
 		this.roomData = array;
 		// Load room background and player image
 		this.assets.images.roomBG = {src: array.background};
@@ -265,6 +283,7 @@ this.AdventureGame = this.AdventureGame || {};
 		}		
 		queue.on('progress', function(evt) {
 			$bar = $('#loadingDiv .progress-bar');
+			$('#loadingDiv').show();
 			$bar.width((evt.loaded*100)+'%');
 			$bar.text(Math.floor(evt.loaded*100)+ "%");
 			console.log('Loaded: '+evt.loaded+'%');
@@ -299,7 +318,8 @@ this.AdventureGame = this.AdventureGame || {};
 		AdventureGame.waitUntilLoaded(tmpImage, 2000).then(function() {
 			var 
 				item,
-				charID;
+				charID,
+				roomParams;
 			// Load player if not yet loaded
 			if(!player) {
 				player = new AdventureGame.Character(_this.playerData);
@@ -318,8 +338,15 @@ this.AdventureGame = this.AdventureGame || {};
 			console.log(_this.itemList);
 			// Load this room if not yet loaded
 			if(_this.roomData) {
+				// Clone the confiuguration so as to not destroy it in case it is to be reused
+				roomParams = JSON.parse(JSON.stringify(_this.roomData));
+				roomParams.floor = _this.roomData.floor;
+				roomParams.onLoad = _this.roomData.onLoad;
+				roomParams.items = [];
+				roomParams.characters = [];
+				//		this.roomData.onLoad = array.onLoad;
+
 				items = _this.roomData.items;
-				_this.roomData.items = [];
 				console.log(AdventureGame.saveGame.inventory);
 				for(item in items) {
 					if(items.hasOwnProperty(item) && 
@@ -329,18 +356,23 @@ this.AdventureGame = this.AdventureGame || {};
 						// This item both in the item placeholder and in the configuration to pass to the room later
 						_this.items[item] = new AdventureGame.Item(items[item]);
 						console.log('Item scale '+items[item].scale+" set to "+_this.items[item].scaleX);
-						_this.roomData.items[item] = _this.items[item];
+						roomParams.items[item] = _this.items[item];
 					}
 				}
 			
 				characters = _this.roomData.characters;
 				for(charID in characters) {
 					if(characters.hasOwnProperty(charID)) {
-						_this.roomData.characters[charID] = new AdventureGame.Character(characters[charID]);
+						if(characters[charID] instanceof AdventureGame.Character) {
+							roomParams.characters[charID] = characters[charID];
+						} else {
+							roomParams.characters[charID] = new AdventureGame.Character(characters[charID]);
+							_this.roomData.characters[charID] = roomParams.characters[charID];
+						}
 					}
 				}
-				_this.currentRoom = new AdventureGame.Room(_this.roomData);
-				_this.door = _this.roomData.entrance;
+				_this.currentRoom = new AdventureGame.Room(roomParams);
+//				_this.door = _this.roomData.entrance;
 				_this.roomData = null;	// Remove this as we now have an actual room
 			}
 			console.log("Fully loaded!");
@@ -381,8 +413,10 @@ this.AdventureGame = this.AdventureGame || {};
 				console.log(_this.scoreText.text);
 				console.log(_this.scoreText);
 				_this.stage.addChild(_this.scoreText);
-			
+				console.profileEnd();
+				console.profile("Main game room");
 			}).catch(function(e) {
+				console.profileEnd();
 				console.error(e.message+": "+e.stack);
 			});
 		
@@ -391,8 +425,7 @@ this.AdventureGame = this.AdventureGame || {};
 		
 			console.log(AdventureGame.player.inventory);
 			console.log(AdventureGame.saveGame.inventory);
-			_this.showInventory();
-					// Now the room is loaded add inventory items from save
+			// Now the room is loaded add inventory items from save
 			for(item in AdventureGame.saveGame.inventory) {
 				// Only add items if they are not already in the inventory (when loading from an object the inventory will already be populated)
 				if(AdventureGame.saveGame.inventory.hasOwnProperty(item)) {
@@ -423,6 +456,7 @@ this.AdventureGame = this.AdventureGame || {};
 				_this.loadedCallback();
 			}
 		}).catch(function(e) {
+			console.profileEnd();
 			console.error(e.message);
 			console.error(e.stack || e.message || e);
 		});
@@ -499,7 +533,7 @@ this.AdventureGame = this.AdventureGame || {};
 			stage.addChild(item);
 			stage.update();
 		}).catch(function(e) {
-			console.error(e.message);
+			console.error(e.message+": "+e.stack);
 		});
 
 		// Make this item draggable after a delay so this doesn't conflcit with the user's current action
