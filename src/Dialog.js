@@ -27,6 +27,9 @@ this.AdventureGame = this.AdventureGame || {};
 	};
 	var p = Dialog.prototype;
 	
+	// Private static properties
+	var activeDialogs = [];
+	
 	// Public Properties
 	
 	/**
@@ -262,6 +265,7 @@ this.AdventureGame = this.AdventureGame || {};
 	 * Display this dialog
 	 * @memberof AdventureGame.Dialog
 	 * @return void
+	 * TODO: Remove JQuery references as the library should not require jQuery
 	 **/
 	p.show = function() {
 		var 
@@ -275,6 +279,8 @@ this.AdventureGame = this.AdventureGame || {};
 		
 		this.domElem = new createjs.DOMElement(this.div);
 		stage.addChild(this.domElem);
+		
+		activeDialogs.push(this);
 	};
 	/**
 	* @memberof AdventureGame.Dialog
@@ -285,6 +291,10 @@ this.AdventureGame = this.AdventureGame || {};
 		if(this.div.parentNode !== null) {
 			document.body.removeChild(this.div);
 		}
+		var dialogIndex = activeDialogs.indexOf(this);
+		if(dialogIndex > -1) {
+			activeDialogs.splice(dialogIndex, 1);
+		}
 		if(this.onClose) {
 			this.onClose({
 				type: evt.type,
@@ -293,6 +303,14 @@ this.AdventureGame = this.AdventureGame || {};
 				dialog: this
 			});
 		}
+	};
+	
+	p.closeAll = function(evt) {
+		console.log('Closing all dialogs');
+		evt = evt || {type: 'forceclose'};
+		activeDialogs.forEach(function(dialog) {
+			dialog.close(evt);
+		});
 	};
 
 	/**
