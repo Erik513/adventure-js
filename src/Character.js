@@ -74,7 +74,7 @@ this.AventureGame = this.AdventureGame || {};
 	 * @type integer
 	 * @memberof AdventureGame.Character
 	 **/
-	p.moveDistance = 5; // 
+	p.moveDistance = 8; // 
 
 	/**
 	 * Container object holding the inventory items for this character

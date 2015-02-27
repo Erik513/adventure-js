@@ -111,6 +111,7 @@ this.AdventureGame = this.AdventureGame || {};
 	p.exit = function() {
 		createjs.Ticker.removeEventListener('tick', this.tickerCallback);
 		this.stage.removeAllChildren();
+		console.profileEnd();
 		return true;
 	};
 

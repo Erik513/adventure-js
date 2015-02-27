@@ -133,6 +133,15 @@ this.AdventureGame = this.AdventureGame || {};
 	};
 	
 	/**
+	* Get all items in this container
+	* @function getItems
+	* @return Item[] Array of all items currently in this container
+	**/
+	p.getItems = function() {
+		return this.items;
+	};
+	
+	/**
 	* Remove the given item from this array.
 	* The item will only be removed if it correctly references its slot in the array.
 	* @function removeItem

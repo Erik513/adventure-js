@@ -250,9 +250,7 @@ this.AdventureGame = this.AdventureGame || {};
 			resolve();
 		}).then(function() {
 			// Scale the background once the room is fully loaded
-			_this.scaleBackground(true).then(function() {
-				console.log("Worked?");
-			}, function() {
+			_this.scaleBackground(true).then(null, function() {
 				console.log("Retrying loading background image");
 				setTimeout(function() {
 					_this.scaleBackground(false);

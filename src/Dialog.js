@@ -280,6 +280,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* @memberof AdventureGame.Dialog
 	*/
 	p.close = function(evt) {
+		console.log("Closing dialog");
 		AdventureGame.stage.removeChild(this.domElem);
 		if(this.div.parentNode !== null) {
 			document.body.removeChild(this.div);
