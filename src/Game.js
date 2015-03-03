@@ -415,6 +415,11 @@ this.AdventureGame = this.AdventureGame || {};
 				_this.stage.addChild(_this.scoreText);
 				console.profileEnd();
 				console.profile("Main game room");
+				
+				
+				if(_this.loadedCallback) {
+					_this.loadedCallback();
+				}
 			}).catch(function(e) {
 				console.profileEnd();
 				console.error(e.message+": "+e.stack);
@@ -452,9 +457,6 @@ this.AdventureGame = this.AdventureGame || {};
 
 			_this.tickerCallback = createjs.Ticker.addEventListener('tick', _this.loop.bind(_this));
 		
-			if(_this.loadedCallback) {
-				_this.loadedCallback();
-			}
 		}).catch(function(e) {
 			console.profileEnd();
 			console.error(e.message);
