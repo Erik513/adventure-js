@@ -379,7 +379,7 @@ this.AdventureGame = this.AdventureGame || {};
 			if(!player.hasEventListener('click')) {
 				player.addEventListener('click', player.onClick.bind('player'));
 			}
-		
+
 			_this.scoreText = new createjs.Text(AdventureGame.saveGame.points.toString(), "30px 'Coming Soon'", "#FFFFFF");	// Create score counter before loading room in case initial event wants to use it
 			_this.currentRoom.load(AdventureGame.player, _this.door).then(function() {
 				console.log("Room loaded");
@@ -405,11 +405,17 @@ this.AdventureGame = this.AdventureGame || {};
 				_this.gameOverlay.scaleY = _this.currentRoom.background.scaleY;
 				_this.stage.addChild(_this.gameOverlay);
 			
+				_this.scoreTitle = new createjs.Text(AdventureGame.saveGame.name+'\'s score', "20px 'Coming Soon'", "#FFFFFF");
+				_this.scoreTitle.scaleX = AdventureGame.getScaleToFit('10%', _this.scoreTitle);
+				_this.scoreTitle.scaleY = _this.scoreTitle.scaleX;
+				_this.scoreTitle.x = AdventureGame.getXCoord('1%');
+				_this.scoreTitle.y = AdventureGame.getYCoord('0.5%');
+				_this.stage.addChild(_this.scoreTitle);
 				// Now draw score timer on top of the room (this goes in the promise as it has to follow the overylay to be placed on top)
 				_this.scoreText.scaleX = AdventureGame.getScaleToFit('10%',_this.scoreText);
 				_this.scoreText.scaleY = _this.scoreText.scaleX;
-				_this.scoreText.x = AdventureGame.getXCoord('2%');
-				_this.scoreText.y = AdventureGame.getYCoord('1%');
+				_this.scoreText.x = AdventureGame.getXCoord('1.5%');
+				_this.scoreText.y = AdventureGame.getYCoord('2%');
 				console.log(_this.scoreText.text);
 				console.log(_this.scoreText);
 				_this.stage.addChild(_this.scoreText);
