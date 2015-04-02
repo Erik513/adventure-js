@@ -239,10 +239,10 @@ this.AdventureGame = this.AdventureGame || {};
 		if(options.width) {
 			this.width = options.width;
 		}
-		if(options.distanceFromLeft) {
+		if(options.distanceFromLeft !== undefined) {
 			this.distanceFromLeft = options.distanceFromLeft;
 		}
-		if(options.distanceFromTop) {
+		if(options.distanceFromTop !== undefined) {
 			this.distanceFromTop = options.distanceFromTop;
 		}
 		if(options.maxHeight) {
