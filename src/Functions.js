@@ -245,7 +245,6 @@ this.AdventureGame = this.AdventureGame || {};
 		AdventureGame.saveGameToDB(saveGame);
 	};
 	
-	
 	/**
 	* Get the value for a given gameflag
 	* function getGameFlag
@@ -255,6 +254,16 @@ this.AdventureGame = this.AdventureGame || {};
 	*/
 	AdventureGame.getGameFlag = function(key) {
 		return AdventureGame.saveGame.flags[key];
+	};
+	
+	/**
+	* Get all game flags set for this game
+	* function getAllGameFlags
+	* @return Array of all flag key/value pairs
+	* @memberof AdventureGame
+	*/
+	AdventureGame.getAllGameFlags = function() {
+		return AdventureGame.saveGame.flags;
 	};
 	
 	
