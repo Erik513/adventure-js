@@ -129,6 +129,7 @@ this.AdventureGame = this.AdventureGame || {};
 	* * distanceFromLeft int the distance in percent to position the dialog from left (default 20)
 	* * width int the width in percent to draw the dialog (default 60)
 	* * maxHeight the maximum permitted height in percent (before scrolling) allowed for dialog (default 40)
+	* * height The absolute height for the dialog in percent. Overrides maxHeight
 	* @function initialize
 	* @memberof AdventureGame.Dialog
 	* @param options Object containing configuraiton options
@@ -258,7 +259,11 @@ this.AdventureGame = this.AdventureGame || {};
 		this.div.style.width = (this.width / 100 * stage.canvas.width)+'px';
 		this.div.style.left = (this.distanceFromLeft / 100 * stage.canvas.width)+'px';
 		this.div.style.top = (this.distanceFromTop / 100 * stage.canvas.height)+'px';
-		this.div.style.maxHeight = (this.maxHeight / 100 * stage.canvas.height)+'px';
+		if(options.height) {
+			this.div.style.height = (options.height / 100 * stage.canvas.height) + 'px';
+		} else {
+			this.div.style.maxHeight = (this.maxHeight / 100 * stage.canvas.height)+'px';
+		}
 	};
 
 	/**
