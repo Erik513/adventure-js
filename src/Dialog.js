@@ -105,6 +105,14 @@ this.AdventureGame = this.AdventureGame || {};
 	p.maxHeight = 40;
 	
 	/**
+	 * Audio file to play for this dialog. Can be file path or id registered with SoundJS
+	 * @name sound
+	 * @type string
+	 * @memberof AdventureGame.Dialog
+	 **/
+	p.sound = null;
+	
+	/**
 	 * Flag indicating if the close option for the dialog should be disabled
 	 * @name disableClose
 	 * @type boolean
@@ -249,6 +257,9 @@ this.AdventureGame = this.AdventureGame || {};
 		if(options.maxHeight) {
 			this.maxHeight = options.maxHeight;
 		}
+		if(options.sound) {
+			this.sound = options.sound;
+		}
 		/*
 		this.div.style.width = AdventureGame.getXCoord(this.width);
 		this.div.style.left = AdventureGame.getXCoord(this.left);
@@ -284,6 +295,12 @@ this.AdventureGame = this.AdventureGame || {};
 		
 		this.domElem = new createjs.DOMElement(this.div);
 		stage.addChild(this.domElem);
+		
+		if(this.sound) {
+			createjs.Sound.stop();
+			var instance = createjs.Sound.play(this.sound);
+			instance.volume = 1;
+		}
 		
 		activeDialogs.push(this);
 	};

@@ -107,7 +107,22 @@ this.AdventureGame = this.AdventureGame || {};
 	 * @memberof AdventureGame.Game
 	 **/
 	p.overlayImages = [];
-	
+
+	/**
+	* Array of additional assets required by this game that are not automatically loaded
+	* @name extraAssets
+	* @type String[]
+	* @memberof AdventureGame.GameBase
+	**/
+	p.extraAssets = [];
+	/**
+	* Array of audio assets required by this game. Similar to extraAssets except specifically for audio files
+	* @name audioAssets
+	* @type String[]
+	* @memberof AdventureGame.GameBase
+	**/
+	p.audioAssets = [];
+		
 	/**
 	* Callback function after game has fully loaded
 	* @name loadedCallback
@@ -142,7 +157,15 @@ this.AdventureGame = this.AdventureGame || {};
 		if(!options.player) {
 			throw "Player is not set";
 		}
+		// Game specific options
 		this.GameBase_initialize(options);	// Call parent setup
+		if(options.extraAssets) {
+			this.extraAssets = options.extraAssets;
+		}
+		if(options.audioAssets) {
+			this.audioAssets = options.audioAssets;
+		}
+		
 		AdventureGame.stage = options.stage;
 		// Load player if set otherwise store array for loading with other assets
 		if(options.player instanceof AdventureGame.Character) {
@@ -246,7 +269,7 @@ this.AdventureGame = this.AdventureGame || {};
 			$bar;
 		
 		// Load extra assets
-		for(assetIndex = 0; assetIndex > this.extraAssets.length; assetIndex++) {
+		for(assetIndex = 0; assetIndex < this.extraAssets.length; assetIndex++) {
 			manifest.push({src: this.extraAssets[assetIndex], id: 'extraAsset'+assetIndex});
 			this.assets.images['extraAsset'+assetIndex] = {src: this.extraAssets[assetIndex]};
 		}
@@ -255,6 +278,14 @@ this.AdventureGame = this.AdventureGame || {};
 		for(overlayIndex = 0; overlayIndex < this.overlayImages.length; overlayIndex++) {
 			manifest.push({src: this.overlayImages[overlayIndex].src, id:'overlay'+overlayIndex});
 			this.assets.images['overlay'+overlayIndex] = this.overlayImages[overlayIndex];
+		}
+		
+		// Load audio assets
+		for(var audioParam in this.audioAssets) {
+			if(this.audioAssets.hasOwnProperty(audioParam)) {
+				manifest.push({src: this.audioAssets[audioParam], id: audioParam});
+				this.assets.audio[audioParam] = {src: this.audioAssets[audioParam]};
+			}
 		}
 						
 //		this.roomData = JSON.parse(JSON.stringify(array));	// Clone roomdata as the item object get turned into an array to be given to the room constructor
