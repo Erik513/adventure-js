@@ -208,7 +208,7 @@ this.AdventureGame = this.AdventureGame || {};
 				inputID = 'radio'+Date.now();
 				for(answerIndex = 0; answerIndex < options.answers.length; answerIndex++) {
 					inputDiv = document.createElement('div');
-					inputDiv.className = 'radio';
+					inputDiv.className = 'radio radio-answer';
 					inputLabel = document.createElement('label');
 					inputElem = document.createElement('input');
 					inputElem.type = 'radio';
@@ -226,7 +226,7 @@ this.AdventureGame = this.AdventureGame || {};
 				inputElem = document.createElement('input');
 				inputElem.type = 'button';
 				inputElem.value = 'OK';
-				inputElem.className = 'btn';
+				inputElem.className = 'btn btn-lg btn-answer';
 				$(inputElem).on('click', this.evaluateAnswer.bind(this));
 				questionForm.appendChild(inputElem);
 				
